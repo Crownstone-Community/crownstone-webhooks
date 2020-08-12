@@ -13,8 +13,13 @@ interface routingElement {
   tokenUserId: string,
   tokenExpirationTime: number,
   scopeAccess: ScopeFilter | true,
+  events: eventMap,
   url: string
   ownerId: string,
+}
+
+interface eventMap {
+  [eventType: string] : boolean
 }
 
 interface userTable {

@@ -34,6 +34,9 @@ class WebHookSystemClass {
         await Util.wait(250)
       }
 
+      await this.generateUserMap()
+      await this.generateRoutingMap()
+
       this.initialized = true;
     }
     catch (e) {
@@ -114,6 +117,7 @@ class WebHookSystemClass {
           listenerId:          listener.id,
           tokenUserId:         listener.userId,
           tokenExpirationTime: expiresAt.valueOf(),
+          events:              getMap(listener.eventTypes),
           scopeAccess:         generateFilterFromScope(accessModel.scopes, accessModel.userId),
           url:                 listener.url,
           ownerId:             listener.ownerId,
@@ -206,8 +210,22 @@ class WebHookSystemClass {
 
 
   dispatch(event: SseDataEvent) {
-
+    // check for sphereId
+    // loop over items
+    // check owner enabled
+    // check token expired
+    // check for event type
+    // check authentication
+    // post
   }
+}
+
+function getMap(stringArray: string[]) : eventMap {
+  let map : eventMap = {};
+  for (let i = 0; i < stringArray.length; i++) {
+    map[stringArray[i]] = true;
+  }
+  return map;
 }
 
 
