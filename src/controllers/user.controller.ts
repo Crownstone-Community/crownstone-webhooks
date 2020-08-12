@@ -1,0 +1,102 @@
+// Uncomment these imports to begin using these cool features!
+
+// import {inject} from '@loopback/context';
+
+import {DataObject, repository} from '@loopback/repository';
+import {del, get, getModelSchemaRef, HttpErrors, param, patch, post, requestBody} from '@loopback/rest';
+import {UserService} from '../services';
+import {inject} from '@loopback/context';
+import {UserRepository} from '../repositories/user.repository';
+import {authenticate} from '@loopback/authentication';
+import {SecurityBindings, securityId, UserProfile} from '@loopback/security';
+import {UserProfileDescription} from '../security/authentication-strategies/apiKey-strategy'
+import {User} from "../models";
+import {WebHookSystem} from "../webhookSystem/WebHookSystem";
+import {EventListenerRepository} from "../repositories";
+
+
+const UserTransferSpec = {
+  content: {
+    'application/json': {
+      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory'] })
+    }
+  }
+}
+
+/**
+ * This controller will echo the state of the hub.
+ */
+export class UserController {
+  constructor(
+    @repository(UserRepository) protected userRepo: UserRepository,
+    @repository(EventListenerRepository) protected listenerRepo: EventListenerRepository,
+    @inject("UserService")
+    public userService: UserService,
+    @inject(SecurityBindings.USER, {optional: true})
+    public user: UserProfile,
+  ) {}
+
+
+  // returns a list of our objects
+  @get('/users/isValidApiKey')
+  @authenticate('apiKey')
+  async isAuthenticated(
+    @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
+  ): Promise<boolean> {
+    return true
+  }
+
+
+  // returns a list of our objects
+  @get('/users/isValidAdminKey')
+  @authenticate('adminKey')
+  async isAdmin(): Promise<boolean> {
+    return true
+  }
+
+
+  @get('/users')
+  @authenticate('adminKey')
+  async getUsers(): Promise<User[]> {
+    return await this.userRepo.find()
+  }
+
+  @post('/users')
+  @authenticate('adminKey')
+  async createUser(
+    @requestBody(UserTransferSpec) userData: User,
+  ): Promise<User> {
+    let newUser = await this.userRepo.create(userData);
+    WebHookSystem.userCreated(newUser);
+    return newUser;
+  }
+
+
+  @patch('/users/{id}')
+  @authenticate('adminKey')
+  async updateUser(
+    @param.path.string('id') id: string,
+    @requestBody(UserTransferSpec) newUser: User,
+  ): Promise<void> {
+    let user = await this.userRepo.findById(id);
+    if (user) {
+      WebHookSystem.userChanged(user);
+      return await this.userRepo.updateById(id, newUser);
+    }
+    throw new HttpErrors.Unauthorized()
+  }
+
+  @del('/users/{id}')
+  @authenticate('adminKey')
+  async deleteUser(
+    @param.path.string('id') id: string,
+  ): Promise<void> {
+    let user = await this.userRepo.findById(id);
+    if (user) {
+      await WebHookSystem.userDeleted(id);
+      await this.listenerRepo.deleteAll({ownerId: id});
+      return await this.userRepo.deleteById(id);
+    }
+    throw new HttpErrors.Unauthorized()
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "name": "crownstone-hooks",
+  "version": "1.0.0",
+  "description": "Source for the webhook platform of Crownstone",
+  "main": "index.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "lb-tsc",
+    "dev": "lb-tsc --watch",
+    "clean": "lb-clean dist *.tsbuildinfo",
+    "lint": "npm run prettier:check && npm run eslint",
+    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
+    "prettier:cli": "lb-prettier \"**/*.ts\" \"**/*.js\"",
+    "prettier:check": "npm run prettier:cli -- -l",
+    "prettier:fix": "npm run prettier:cli -- --write",
+    "eslint": "lb-eslint --report-unused-disable-directives .",
+    "eslint:fix": "npm run eslint -- --fix",
+    "pretest": "npm run clean && npm run build",
+    "test": "lb-mocha --allow-console-logs \"dist/__tests__\"",
+    "posttest": "npm run lint",
+    "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
+    "docker:build": "docker build -t crownstone-hub .",
+    "docker:run": "docker run -p 3000:3000 -d crownstone-hub",
+    "migrate": "node ./dist/migrate",
+    "prestart": "npm run build",
+    "start": "node -r source-map-support/register .",
+    "prepublishOnly": "npm run test"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "author": "",
+  "license": "",
+  "files": [
+    "README.md",
+    "index.js",
+    "index.d.ts",
+    "dist",
+    "src",
+    "!*/__tests__"
+  ],
+  "dependencies": {
+    "@loopback/authentication": "^4.2.6",
+    "@loopback/authorization": "^0.5.11",
+    "@loopback/boot": "^2.3.2",
+    "@loopback/context": "^3.8.2",
+    "@loopback/core": "^2.7.1",
+    "@loopback/openapi-v3": "^3.4.2",
+    "@loopback/repository": "^2.6.0",
+    "@loopback/rest": "^5.1.0",
+    "@loopback/rest-explorer": "^2.2.3",
+    "@loopback/security": "^0.2.11",
+    "@loopback/service-proxy": "^2.3.1",
+    "@types/node-fetch": "^2.5.7",
+    "debug": "^4.1.1",
+    "debug-level": "^0.3.1",
+    "helmet": "^3.21.2",
+    "loopback-connector-mongodb": "^5.2.3",
+    "node-fetch": "^2.6.0",
+    "socket.io-client": "^2.3.0",
+    "tslib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@loopback/build": "^5.4.2",
+    "@loopback/eslint-config": "^8.0.0",
+    "@loopback/testlab": "^3.1.6",
+    "@types/node": "^14.0.13",
+    "@types/socket.io-client": "^1.4.33",
+    "@typescript-eslint/eslint-plugin": "^3.2.0",
+    "@typescript-eslint/parser": "^3.2.0",
+    "debug-level": "^0.3.1",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-eslint-plugin": "^2.2.2",
+    "eslint-plugin-mocha": "^7.0.1",
+    "nodemon": "^2.0.4",
+    "source-map-support": "^0.5.19",
+    "typescript": "^3.9.5"
+  }
+}

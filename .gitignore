@@ -1,0 +1,9 @@
+.idea
+node_modules
+*.js
+
+.config.
+
+*.sh
+
+dist
