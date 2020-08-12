@@ -24,7 +24,13 @@ const pkg: PackageInfo = require('../package.json');
 
 export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(RepositoryMixin(RestApplication))) {
   constructor(options: ApplicationConfig = {}) {
-    super({...options, rest: { ...options.rest, port:5050 }});
+    let executionPath = __dirname;
+    if (options.customPath !== undefined) {
+      executionPath = options.customPath;
+    }
+    let customPort = options.port || process.env.PORT || 5050;
+    super({...options, rest: { ...options.rest, port: customPort }})
+
 
     this.api({
       openapi: '3.0.0',
@@ -60,13 +66,13 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
     this.sequence(CrownstoneSequence);
 
     // Set up default home page
-    this.static('/', path.join(__dirname, '../public'));
+    this.static('/', path.join(executionPath, '../public'));
 
     // Customize @loopback/rest-explorer configuration here
     this.configure(RestExplorerBindings.COMPONENT).to({ path: '/explorer' });
     this.component(RestExplorerComponent);
 
-    this.projectRoot = __dirname;
+    this.projectRoot = executionPath;
 
     // Customize @loopback/boot Booter Conventions here
     this.bootOptions = {

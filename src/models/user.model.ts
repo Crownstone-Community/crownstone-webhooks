@@ -13,14 +13,14 @@ export class User extends Entity {
   @property({type: 'string', required: true})
   name: string;
 
-  @property({type: 'string', required: true})
+  @property({type: 'string'})
   apiKey: string;
 
-  @property({type: 'string', required: true})
+  @property({type: 'string'})
   secret: string;
 
-  @property({itemType: 'string', required: true})
-  scopes: string[];
+  // @property({itemType: 'string', required: true})
+  // scopes: string[];
 
   @property({type: 'boolean', defaultValue: true})
   enabled: boolean

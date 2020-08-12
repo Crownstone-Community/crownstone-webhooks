@@ -243,6 +243,5 @@ function postToUrl(clientId: string, clientSecret: string, userId: string, data 
 export const WebHookSystem = new WebHookSystemClass();
 export const SocketManager = new SocketManagerClass(WebHookSystem.dispatch);
 
-SocketManager.setupConnection();
 
 

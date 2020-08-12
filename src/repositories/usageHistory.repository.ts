@@ -11,7 +11,9 @@ import {HttpErrors} from "@loopback/rest";
 const DAILY_ALLOWANCE = 5000;
 
 export class UsageHistoryRepository extends DefaultCrudRepository<UsageHistory,typeof UsageHistory.prototype.id> {
-  constructor( @inject('datasources.mongo') protected datasource: juggler.DataSource ) {
+  constructor(
+    @inject('datasources.mongo') protected datasource: juggler.DataSource
+  ) {
     super(UsageHistory, datasource);
   }
 

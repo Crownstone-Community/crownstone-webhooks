@@ -13,12 +13,22 @@ import {UserProfileDescription} from '../security/authentication-strategies/apiK
 import {User} from "../models";
 import {WebHookSystem} from "../webhookSystem/WebHookSystem";
 import {EventListenerRepository} from "../repositories";
+import * as crypto from "crypto";
 
 
-const UserTransferSpec = {
+const UserUpdateSpec = {
   content: {
     'application/json': {
-      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory'] })
+      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory', 'apiKey'] })
+    }
+  }
+}
+
+
+const UserCreateSpec = {
+  content: {
+    'application/json': {
+      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory', 'enabled', 'apiKey','secret'] })
     }
   }
 }
@@ -64,8 +74,12 @@ export class UserController {
   @post('/users')
   @authenticate('adminKey')
   async createUser(
-    @requestBody(UserTransferSpec) userData: User,
+    @requestBody(UserCreateSpec) userData: User,
   ): Promise<User> {
+    let apiKey = crypto.randomBytes(32).toString('hex');
+    let secret = crypto.randomBytes(16).toString('hex');
+    userData.apiKey = apiKey;
+    userData.secret = secret;
     let newUser = await this.userRepo.create(userData);
     WebHookSystem.userCreated(newUser);
     return newUser;
@@ -76,7 +90,7 @@ export class UserController {
   @authenticate('adminKey')
   async updateUser(
     @param.path.string('id') id: string,
-    @requestBody(UserTransferSpec) newUser: User,
+    @requestBody(UserUpdateSpec) newUser: User,
   ): Promise<void> {
     let user = await this.userRepo.findById(id);
     if (user) {

@@ -3,7 +3,7 @@ import {
   juggler, repository,
 } from '@loopback/repository';
 import {inject,} from '@loopback/core';
-import {DataObject, Options} from '@loopback/repository/src/common-types';
+import {Options} from '@loopback/repository/src/common-types';
 import {HttpErrors} from '@loopback/rest/dist';
 import {UsageHistoryRepository} from "./usageHistory.repository";
 import {EventListenerRepository} from "./eventListener.repository";
@@ -15,9 +15,9 @@ export class UserRepository extends DefaultCrudRepository<User,typeof User.proto
   public usageHistory:   HasManyRepositoryFactory<UsageHistory,  typeof UsageHistory.prototype.id>;
 
   constructor(
+    @inject('datasources.mongo') protected datasource: juggler.DataSource,
     @repository(EventListenerRepository) protected eventListenerRepository: EventListenerRepository,
     @repository(UsageHistoryRepository)  protected usageHistoryRepository:  UsageHistoryRepository,
-    @inject('datasources.mongo') protected datasource: juggler.DataSource,
   ) {
     super(User, datasource);
     this.eventListeners = this.createHasManyRepositoryFactoryFor('eventListeners',async () => eventListenerRepository);
