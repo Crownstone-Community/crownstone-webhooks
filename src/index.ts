@@ -2,10 +2,12 @@ import {ApplicationConfig} from '@loopback/core';
 import {CrownstoneHooksApplication} from "./application";
 import {DbRef} from "./webhookSystem/DbReference";
 import {EventListenerRepository, UsageHistoryRepository, UserRepository} from "./repositories";
-import {SocketManager, WebHookSystem} from "./webhookSystem/WebHookSystem";
+import {WebHookSystem} from "./webhookSystem/WebHookSystem";
+import {SocketManager} from "./sockets/socket/SocketManager";
 
 Error.stackTraceLimit = 100;
 export async function main(options: ApplicationConfig = {}) {
+  SocketManager.setCallback(WebHookSystem.dispatch)
   SocketManager.setupConnection();
 
   const app = new CrownstoneHooksApplication();

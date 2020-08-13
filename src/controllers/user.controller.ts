@@ -92,12 +92,17 @@ export class UserController {
     @param.path.string('id') id: string,
     @requestBody(UserUpdateSpec) newUser: User,
   ): Promise<void> {
-    let user = await this.userRepo.findById(id);
-    if (user) {
+    try {
+      let user = await this.userRepo.findById(id);
       WebHookSystem.userChanged(user);
       return await this.userRepo.updateById(id, newUser);
     }
-    throw new HttpErrors.Unauthorized()
+    catch (e) {
+      if (e.code === 'ENTITY_NOT_FOUND') {
+        throw new HttpErrors.Unauthorized()
+      }
+      throw e;
+    }
   }
 
   @del('/users/{id}')
@@ -105,12 +110,16 @@ export class UserController {
   async deleteUser(
     @param.path.string('id') id: string,
   ): Promise<void> {
-    let user = await this.userRepo.findById(id);
-    if (user) {
+    try {
       await WebHookSystem.userDeleted(id);
       await this.listenerRepo.deleteAll({ownerId: id});
       return await this.userRepo.deleteById(id);
     }
-    throw new HttpErrors.Unauthorized()
+    catch (e) {
+      if (e.code === 'ENTITY_NOT_FOUND') {
+        throw new HttpErrors.Unauthorized()
+      }
+      throw e;
+    }
   }
 }

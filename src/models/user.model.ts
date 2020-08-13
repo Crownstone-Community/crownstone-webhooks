@@ -1,5 +1,6 @@
 import {Entity, model, property, hasMany,} from '@loopback/repository';
 import {EventListener} from "./eventListener.model";
+import {UsageHistory} from "./usageHistory.model";
 
 @model()
 export class User extends Entity {
@@ -25,9 +26,9 @@ export class User extends Entity {
   @property({type: 'boolean', defaultValue: true})
   enabled: boolean
 
-  @hasMany(() => EventListener)
+  @hasMany(() => EventListener, {keyTo: 'ownerId'})
   eventListeners: EventListener[];
 
-  @hasMany(() => EventListener)
-  usageHistory: EventListener[];
+  @hasMany(() => UsageHistory, {keyTo: 'ownerId'})
+  usageHistory: UsageHistory[];
 }

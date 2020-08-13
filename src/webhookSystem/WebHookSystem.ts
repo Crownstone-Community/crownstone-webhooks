@@ -1,17 +1,16 @@
-import {SocketManagerClass} from "../sockets/socket/SocketManager";
 import fetch from 'node-fetch';
 import {DbRef} from "./DbReference";
 import {Util} from "../util/Util";
 import {generateFilterFromScope} from "../sockets/ScopeFilter";
-import {EventListenerRepository} from "../repositories";
 import {EventListener, User} from "../models";
-import {extensions} from "@loopback/core";
-import list = extensions.list;
+import {SocketManager} from "../sockets/socket/SocketManager";
+import {HttpErrors} from "@loopback/rest";
 
 const defaultHeaders = {
   'Accept': 'application/json',
   'Content-Type': 'application/json',
 };
+
 
 class WebHookSystemClass {
 
@@ -74,18 +73,20 @@ class WebHookSystemClass {
     }
   }
 
-  async _generateRoutingMapForListener(listener: EventListener) {
+  async _generateRoutingMapForListener(listener: EventListener, throwErrors = false) : Promise<void> {
     let accessModel = await SocketManager.isValidToken(listener.token);
 
     // invalid token, remove listener
     if (accessModel === false) {
       await DbRef.listeners.deleteById(listener.id);
+      if (throwErrors) { throw new HttpErrors.BadRequest("Invalid token."); }
       return;
     }
 
     // user does not exist anymore. delete listener
     if (this.userTable[listener.ownerId] === undefined) {
       await DbRef.listeners.deleteById(listener.id);
+      if (throwErrors) { throw new HttpErrors.BadRequest("Invalid User."); }
       return;
     }
 
@@ -130,15 +131,20 @@ class WebHookSystemClass {
     if (this.tokenTable[token] === undefined) { return; }
 
     let listenerIds = this.tokenTable[token];
-    for (let i = listenerIds.length; i >= 0; i--) {
+    for (let i = listenerIds.length - 1; i >= 0; i--) {
       this.listenerDeleted(listenerIds[i], true)
     }
 
     delete this.tokenTable[token];
   }
 
-  async listenerCreated(listener: EventListener) {
-    this._generateRoutingMapForListener(listener);
+  async listenerCreated(listener: EventListener, throwErrors = false) : Promise<void> {
+    if (SocketManager.isConnected() && this.initialized) {
+      return this._generateRoutingMapForListener(listener, throwErrors);
+    }
+    else {
+      // do nothing. This will be checked later.
+    }
   }
 
   listenerDeleted(listenerId : string, keepToken: boolean = false) {
@@ -151,7 +157,7 @@ class WebHookSystemClass {
     // remove listener from the routing table.
     for (let i = 0; i < sphereIds.length; i++) {
       let sphereId = sphereIds[i];
-      for (let j = this.routingTable[sphereId].length; j >= 0; j--) {
+      for (let j = this.routingTable[sphereId].length - 1; j >= 0; j--) {
         let routingItem = this.routingTable[sphereId][j];
         if (routingItem.listenerId === listenerId) {
           // remove this element from the sphere.
@@ -165,7 +171,7 @@ class WebHookSystemClass {
 
     if (keepToken === false) {
       // remove from the tokentable
-      for (let j = this.tokenTable[token].length; j >= 0; j--) {
+      for (let j = this.tokenTable[token].length - 1; j >= 0; j--) {
         if (this.tokenTable[token][j] === listenerId) {
           // remove this element from the sphere.
           this.tokenTable[token].splice(j, 1);
@@ -206,6 +212,8 @@ class WebHookSystemClass {
     this.userTable[userId].listeners.forEach((listenerId) => {
       this.listenerDeleted(listenerId);
     })
+
+    delete this.userTable[userId];
   }
 
 
@@ -217,6 +225,7 @@ class WebHookSystemClass {
     // check for event type
     // check authentication
     // post
+    // inrement counter
   }
 }
 
@@ -239,9 +248,8 @@ function postToUrl(clientId: string, clientSecret: string, userId: string, data 
   fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) }).catch()
 }
 
-
 export const WebHookSystem = new WebHookSystemClass();
-export const SocketManager = new SocketManagerClass(WebHookSystem.dispatch);
+
 
 
 

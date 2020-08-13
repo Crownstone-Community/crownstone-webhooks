@@ -12,7 +12,8 @@ const MongoDbConfig = {
   useUnifiedTopology: true,
   connectionTimeout: 10000,
   keepAlive: true,
-  lazyConnect: true
+  lazyConnect: true,
+  normalizeUndefinedInQuery: 'nullify'
 }
 
 

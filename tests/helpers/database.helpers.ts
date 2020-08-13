@@ -20,3 +20,20 @@ export async function clearTestDatabase() {
   await eventListenerRepository.deleteAll();
   await usageHistoryRepository.deleteAll();
 }
+
+export function getUserRepository() : UserRepository {
+  let userRepository: UserRepository;
+  let eventListenerRepository = new EventListenerRepository(testdb)
+  let usageHistoryRepository  = new UsageHistoryRepository(testdb)
+
+  userRepository = new UserRepository(
+    testdb,
+    eventListenerRepository,
+    usageHistoryRepository,
+  );
+
+  return userRepository;
+}
+export function getListenerRepository() : EventListenerRepository {
+  return new EventListenerRepository(testdb);
+}

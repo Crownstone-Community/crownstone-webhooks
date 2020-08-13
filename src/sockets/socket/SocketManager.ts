@@ -18,7 +18,7 @@ const errors = {
   invalidResponse: 'invalidResponse',
 }
 
-export class SocketManagerClass {
+class SocketManagerClass {
   // @ts-ignore
   socket : Socket;
   reconnectAfterCloseTimeout : Timeout | undefined;
@@ -26,8 +26,12 @@ export class SocketManagerClass {
 
   eventCallback : (arg0: SseDataEvent) => void
 
-  constructor(eventCallback: (arg0: SseDataEvent) => void) {
-    this.eventCallback = eventCallback
+  constructor(eventCallback: (arg0: SseDataEvent) => void = () => {}) {
+    this.eventCallback = eventCallback;
+  }
+
+  setCallback(eventCallback: (arg0: SseDataEvent) => void) {
+    this.eventCallback = eventCallback;
   }
 
   setupConnection() {
@@ -111,5 +115,6 @@ export class SocketManagerClass {
   isValidOauthToken(token: string) : Promise<AccessModel | false>{
     return this._isValidToken(token, protocolTopics.requestForOauthTokenCheck);
   }
-
 }
+
+export const SocketManager = new SocketManagerClass();

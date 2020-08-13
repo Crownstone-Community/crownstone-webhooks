@@ -31,33 +31,35 @@ export class ListenerController {
   ) {}
 
   // check if there is already a listener with this token for this user
-  @get('/listener/exists')
+  @get('/listeners/active')
   @authenticate('apiKey')
   async doesListenerExist(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
     @param.query.string('token') token: string,
   ): Promise<boolean> {
     let userId = userProfile[securityId];
-    let listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, token: token}}, { fields: {id:true}})
+    let listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, token: token}}, {fields: {id:true}})
     return listenerId != null;
   }
 
   // create a new listener
-  @post('/listener')
+  @post('/listeners')
   @authenticate('apiKey')
   async create(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
     @requestBody(ListenerTransferSpec) listener: EventListener,
   ): Promise<EventListener> {
     let userId = userProfile[securityId];
-    let newListener = await this.userRepo.createListener(userId, listener)
-    WebHookSystem.listenerCreated(newListener);
+    let newListener = await this.userRepo.createListener(userId, listener);
+
+    await WebHookSystem.listenerCreated(newListener, true);
+
     return newListener;
   }
 
 
   // create a new listener
-  @get('/listener')
+  @get('/listeners')
   @authenticate('apiKey')
   async list(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
@@ -66,7 +68,7 @@ export class ListenerController {
   }
 
   // delete a listener by Id
-  @del('/listener/{id}')
+  @del('/listeners/{id}')
   @authenticate('apiKey')
   async delete(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
@@ -82,7 +84,7 @@ export class ListenerController {
   }
 
    // delete multiple listeners that use a token.
-  @del('/listener/token')
+  @del('/listeners/token')
   @authenticate('apiKey')
   async deleteByToken(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,

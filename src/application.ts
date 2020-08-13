@@ -25,12 +25,12 @@ const pkg: PackageInfo = require('../package.json');
 export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(RepositoryMixin(RestApplication))) {
   constructor(options: ApplicationConfig = {}) {
     let executionPath = __dirname;
-    if (options.customPath !== undefined) {
-      executionPath = options.customPath;
+    if (options.customPath !== undefined) { executionPath = options.customPath; }
+    let customPort = process.env.PORT || 5050;
+    if (options.rest && options.rest.port !== undefined) {
+      customPort = options.rest.port;
     }
-    let customPort = options.port || process.env.PORT || 5050;
     super({...options, rest: { ...options.rest, port: customPort }})
-
 
     this.api({
       openapi: '3.0.0',
@@ -74,12 +74,26 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
 
     this.projectRoot = executionPath;
 
-    // Customize @loopback/boot Booter Conventions here
+    // We define both here to allow the testing framework to generate coverage over the ts files.
     this.bootOptions = {
       controllers: {
-        // Customize ControllerBooter Conventions here
         dirs: ['controllers'],
-        extensions: ['.controller.js'],
+        extensions: ['.controller.ts','.controller.js'],
+        nested: true,
+      },
+      repositories: {
+        dirs: ['repositories'],
+        extensions: ['.repository.ts','.repository.js'],
+        nested: true,
+      },
+      datasources: {
+        dirs: ['datasources'],
+        extensions: ['.datasource.ts','.datasource.js'],
+        nested: true,
+      },
+      services: {
+        dirs: ['services'],
+        extensions: ['.service.ts','.service.js'],
         nested: true,
       },
     };
