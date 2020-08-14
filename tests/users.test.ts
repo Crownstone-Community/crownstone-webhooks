@@ -1,21 +1,19 @@
 import {Client, createRestAppClient} from '@loopback/testlab';
 import {CrownstoneHooksApplication} from "../src/application";
-import {admin_auth, api_auth, clearTestDatabase, createApp, generateMike} from "./helpers";
-
-
+import {admin_auth, api_auth, clearTestDatabase, createApp} from "./helpers";
+import {generateMike} from "./dataGenerators";
+import {WebHookSystem} from "../src/webhookSystem/WebHookSystem";
 
 let app    : CrownstoneHooksApplication;
 let client : Client;
 
+beforeEach(async () => { await clearTestDatabase(); WebHookSystem.reset(); })
 beforeAll(async () => {
-  await clearTestDatabase()
   app    = await createApp()
   client = createRestAppClient(app);
 })
+afterAll(async () => { await app.stop(); })
 
-afterAll(async () => {
-  await app.stop()
-})
 
 test("user get/set", async () => {
   await client.get("/users").expect(401);
@@ -51,8 +49,6 @@ test("check key validation endpoints", async () => {
 })
 
 test("user edit/delete", async () => {
-  await clearTestDatabase()
-
   let mike_token = '';
   let fake_id = 'I_AM_NO_USER';
   let mike_id = '';

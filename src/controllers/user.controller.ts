@@ -19,11 +19,10 @@ import * as crypto from "crypto";
 const UserUpdateSpec = {
   content: {
     'application/json': {
-      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory', 'apiKey'] })
+      schema: getModelSchemaRef(User, {exclude: ['id', 'eventListeners', 'usageHistory', 'apiKey'], partial: true})
     }
   }
 }
-
 
 const UserCreateSpec = {
   content: {
@@ -90,12 +89,17 @@ export class UserController {
   @authenticate('adminKey')
   async updateUser(
     @param.path.string('id') id: string,
-    @requestBody(UserUpdateSpec) newUser: User,
+    @requestBody(UserUpdateSpec) partialUser: DataObject<User>,
   ): Promise<void> {
-    // the findById will throw a 404, which is fine here since it's an admin account
-    let user = await this.userRepo.findById(id);
-    WebHookSystem.userChanged(user);
-    return await this.userRepo.updateById(id, newUser);
+    if (await this.userRepo.exists(id)) {
+      await this.userRepo.updateById(id, partialUser);
+
+      // the findById will throw a 404, which is fine here since it's an admin account
+      let user = await this.userRepo.findById(id);
+      WebHookSystem.userChanged(user);
+      return
+    }
+    throw new HttpErrors.NotFound()
   }
 
   @del('/users/{id}')

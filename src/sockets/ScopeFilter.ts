@@ -55,3 +55,31 @@ export function generateFilterFromScope(scopes : string[], userId: string): Scop
 
   return scopeFilter;
 }
+
+
+export function checkScopePermissions(scopeFilter: ScopeFilter | true, eventData: SseDataEvent) : boolean {
+  if (scopeFilter === true) {
+    return true;
+  }
+
+  let typeFilter = scopeFilter[eventData.type];
+  if (typeFilter) {
+    if (typeFilter["*"] !== undefined) {
+      return typeFilter["*"](eventData);
+    }
+    else {
+      let subType : string = "";
+      if ("subType" in eventData) {
+        subType = eventData.subType
+      }
+      else if ("operation" in eventData) {
+        subType = eventData.operation
+      }
+      if (typeFilter[subType] !== undefined) {
+        return typeFilter[subType](eventData);
+      }
+    }
+  }
+
+  return false;
+}

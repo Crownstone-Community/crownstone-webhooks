@@ -4,9 +4,7 @@ import {
   admin_auth,
   api_auth,
   clearTestDatabase,
-  createApp, createListener,
-  createUser,
-  generateListenerDataModel, getListenerRepository, getUserRepository,
+  createApp, getListenerRepository, getUserRepository,
 } from "./helpers";
 import {mockSocketManager} from "./mocks";
 
@@ -14,22 +12,20 @@ let socketManagerConfig = {connected: false, invalidToken: true}
 mockSocketManager(socketManagerConfig)
 
 import {WebHookSystem} from "../src/webhookSystem/WebHookSystem";
+import {createListener, createUser, generateListenerDataModel} from "./dataGenerators";
 
 
 let app    : CrownstoneHooksApplication;
 let client : Client;
 
 
+beforeEach(async () => { await clearTestDatabase(); WebHookSystem.reset();})
 beforeAll(async () => {
-  await clearTestDatabase()
   app    = await createApp()
   client = createRestAppClient(app);
 })
+afterAll(async () => { await app.stop(); })
 
-
-afterAll(async () => {
-  await app.stop()
-})
 
 
 test("listener get/set", async () => {
@@ -64,7 +60,6 @@ test("listener get/set", async () => {
 
 
 test("listener remove by token", async () => {
-  await clearTestDatabase();
   let userRepo     = getUserRepository();
   let listenerRepo = getListenerRepository();
 
@@ -118,8 +113,6 @@ test("listener remove by token", async () => {
 
 
 test("listener exists", async () => {
-  await clearTestDatabase();
-
   let {token} = await createUser(client, 'mike');
 
   socketManagerConfig.connected = true;
@@ -134,8 +127,6 @@ test("listener exists", async () => {
 
 
 test("listener remove single", async () => {
-  await clearTestDatabase();
-
   let {token: apiKey_mike} = await createUser(client, 'mike');
   let {token: apiKey_bob } = await createUser(client, 'bob');
 
@@ -168,7 +159,6 @@ test("listener remove single", async () => {
 
 
 test("listener remove user deletion", async () => {
-  await clearTestDatabase();
   let userRepo = getUserRepository();
 
   let {token: apiKey_mike, id: id_mike} = await createUser(client, 'mike');

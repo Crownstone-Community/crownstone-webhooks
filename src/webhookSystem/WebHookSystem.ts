@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import {DbRef} from "./DbReference";
 import {Util} from "../util/Util";
-import {generateFilterFromScope} from "../sockets/ScopeFilter";
+import {checkScopePermissions, generateFilterFromScope} from "../sockets/ScopeFilter";
 import {EventListener, User} from "../models";
 import {SocketManager} from "../sockets/socket/SocketManager";
 import {HttpErrors} from "@loopback/rest";
@@ -115,6 +115,7 @@ class WebHookSystemClass {
         }
 
         this.routingTable[sphereId].push({
+          token:               listener.token,
           listenerId:          listener.id,
           tokenUserId:         listener.userId,
           tokenExpirationTime: expiresAt.valueOf(),
@@ -149,7 +150,6 @@ class WebHookSystemClass {
 
   listenerDeleted(listenerId : string, keepToken: boolean = false) {
     if (this.listenerTable[listenerId] === undefined) { return; }
-
 
     let sphereIds = this.listenerTable[listenerId].sphereIds;
     let token = this.listenerTable[listenerId].token;
@@ -219,13 +219,61 @@ class WebHookSystemClass {
 
   dispatch(event: SseDataEvent) {
     // check for sphereId
+    if (!event) { return };
+
+    let eventType = event.type;
+    let sphereId = event.sphere?.id;
+    if (eventType === undefined || this.routingTable[sphereId] === undefined) { return; }
+
+    let now = new Date().valueOf()
+
+    let expiredTokens = [];
+
     // loop over items
-    // check owner enabled
-    // check token expired
-    // check for event type
-    // check authentication
-    // post
-    // inrement counter
+    for (let i = 0; i < this.routingTable[sphereId].length; i++) {
+      let routingItem = this.routingTable[sphereId][i];
+
+      let hookUserId = routingItem.ownerId;
+
+      // check owner enabled
+      if (this.userTable[hookUserId] === undefined)      { continue; }
+      if (this.userTable[hookUserId].enabled === false ) { continue; }
+
+      // check token expired
+      if (routingItem.tokenExpirationTime <= now) {
+        if (expiredTokens.indexOf(routingItem.token) === -1) {
+          expiredTokens.push(routingItem.token);
+        }
+        continue;
+      }
+
+      // check for event type
+      if (routingItem.events[eventType] !== true) { continue; }
+
+      // check authentication
+      if (checkScopePermissions(routingItem.scopeAccess, event) === false) { continue; }
+
+      // post
+      postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
+
+      // inrement counter
+      DbRef.usage.increment(hookUserId).catch();
+
+    }
+
+    // delete all expired tokens.
+    for (let i = 0; i < expiredTokens.length; i++) {
+      this.tokenDeleted(expiredTokens[i]);
+    }
+  }
+
+  reset() {
+    this.routingTable  = {};
+    this.userTable     = {};
+    this.listenerTable = {};
+    this.tokenTable    = {};
+    this.initialized   = false;
+    this.initializing  = false;
   }
 }
 
@@ -238,14 +286,17 @@ function getMap(stringArray: string[]) : eventMap {
 }
 
 
-function postToUrl(clientId: string, clientSecret: string, userId: string, data : SseDataEvent, url: string) {
+async function postToUrl(clientId: string, clientSecret: string, userId: string, data : SseDataEvent, url: string) {
   let wrappedData = {
     clientId: clientId,
     clientSecret: clientSecret,
     userId: userId,
     data: data,
   }
-  fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) }).catch()
+  try {
+    await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
+  }
+  catch(e) {}
 }
 
 export const WebHookSystem = new WebHookSystemClass();

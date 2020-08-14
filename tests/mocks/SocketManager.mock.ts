@@ -2,18 +2,20 @@ import {Util} from "../../src/util/Util";
 
 const src = '../../src/'
 
-interface SocketManagerMockConfig {
-  connected?: boolean,
-  isValidToken?: (arg0: any) => Promise<any>,
-  spheres?: {[sphereId: string]: boolean},
-  sphereId?: string,
-  ttl?: number,
-  createdAt?: number,
-  userId?: string,
-  scopes?: string[]
+export function resetSocketManagerConfig(config: SocketManagerMockConfig, defaultConfig: SocketManagerMockConfig) {
+  config.connected    = defaultConfig.connected
+  config.invalidToken = defaultConfig.invalidToken
+  config.isValidToken = defaultConfig.isValidToken
+  config.isValidToken = defaultConfig.isValidToken
+  config.spheres      = defaultConfig.spheres
+  config.sphereId     = defaultConfig.sphereId
+  config.ttl          = defaultConfig.ttl
+  config.createdAt    = defaultConfig.createdAt
+  config.userId       = defaultConfig.userId
+  config.scopes       = defaultConfig.scopes
 }
 
-export function mockSocketManager(config: any) {
+export function mockSocketManager(config: SocketManagerMockConfig) {
   jest.mock(src+"sockets/socket/SocketManager", () => {
     return {
       SocketManager: {
@@ -21,9 +23,9 @@ export function mockSocketManager(config: any) {
           if (config.connected !== undefined) { return config.connected; }
           return true;
         },
-        isValidToken: async () => {
+        isValidToken: async (token) => {
           if (config.isValidToken !== undefined) {
-            return config.isValidToken()
+            return config.isValidToken(token)
           }
           else {
             if (config.invalidToken) {

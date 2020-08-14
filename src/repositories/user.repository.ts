@@ -39,5 +39,4 @@ export class UserRepository extends DefaultCrudRepository<User,typeof User.proto
   async createListener(userId: string, entity: EventListener) : Promise<EventListener> {
     return this.eventListeners(userId).create(entity)
   }
-
 }

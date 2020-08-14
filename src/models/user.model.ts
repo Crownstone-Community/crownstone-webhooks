@@ -23,7 +23,7 @@ export class User extends Entity {
   // @property({itemType: 'string', required: true})
   // scopes: string[];
 
-  @property({type: 'boolean', defaultValue: true})
+  @property({type: 'boolean', default: true})
   enabled: boolean
 
   @hasMany(() => EventListener, {keyTo: 'ownerId'})

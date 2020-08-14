@@ -4,6 +4,8 @@ interface EventFilter {
   sphereIds? : { [key: string]: boolean }
 }
 
+type oauthScope = "all" | "user_location" | "stone_information" | "sphere_information" | "switch_stone" | "location_information" | "user_information" | "power_consumption" | "user_id";
+
 interface ScopeFilter {
   [key: string]: {
     [key: string] : (arg0: any) => boolean
@@ -18,7 +20,7 @@ interface AccessModel {
   spheres: {
     [key: string] : boolean
   },
-  scopes: string[]
+  scopes: oauthScope[]
 }
 
 type SseEvent = SseSystemEvent | SseDataEvent

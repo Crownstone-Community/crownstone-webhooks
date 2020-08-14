@@ -9,6 +9,7 @@ interface routingTable {
 }
 
 interface routingElement {
+  token: string,
   listenerId: string,
   tokenUserId: string,
   tokenExpirationTime: number,

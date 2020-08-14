@@ -1,6 +1,6 @@
 import {Request, Response} from "express-serve-static-core";
 import {EventGenerator} from "./EventGenerator";
-import {generateFilterFromScope} from "./ScopeFilter";
+import {checkScopePermissions, generateFilterFromScope} from "./ScopeFilter";
 import Timeout = NodeJS.Timeout;
 
 export class SSEConnection {
@@ -67,36 +67,9 @@ export class SSEConnection {
       return this.destroy(EventGenerator.getErrorEvent(401, "TOKEN_EXPIRED", "Token Expired."));
     }
 
-    if (this.checkScopePermissions(eventData)) {
+    if (checkScopePermissions(this.scopeFilter, eventData)) {
       this._transmit("data:" + dataStringified + "\n\n");
     }
-  }
-
-  checkScopePermissions(eventData: SseDataEvent) : boolean {
-    if (this.scopeFilter === true) {
-      return true;
-    }
-
-    let typeFilter = this.scopeFilter[eventData.type];
-    if (typeFilter) {
-      if (typeFilter["*"] !== undefined) {
-        return typeFilter["*"](eventData);
-      }
-      else {
-        let subType : string = "";
-        if ("subType" in eventData) {
-          subType = eventData.subType
-        }
-        else if ("operation" in eventData) {
-          subType = eventData.operation
-        }
-        if (typeFilter[subType] !== undefined) {
-          return typeFilter[subType](eventData);
-        }
-      }
-    }
-
-    return false;
   }
 
   _transmit(data : string) {
