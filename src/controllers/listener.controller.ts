@@ -75,7 +75,7 @@ export class ListenerController {
     @param.path.string('id') id: string,
   ): Promise<void> {
     try {
-      await this.listenerRepo.deleteById(id);
+      await this.userRepo.eventListeners(userProfile[securityId]).delete({id: id})
       WebHookSystem.listenerDeleted(id);
     }
     catch (e) {

@@ -1,4 +1,4 @@
-import {admin_auth} from "./util.helpers";
+import {admin_auth, api_auth} from "./util.helpers";
 import {Client} from "@loopback/testlab";
 
 export function getUserDataModel(name : string) : object {
@@ -34,6 +34,16 @@ export function generateListenerDataModel(token: string = 'thisIsAnOauthToken', 
     ],
     url: url
   }
+}
+
+function mockToken() {
+  return Math.floor(Math.random()*1e8).toString(16)
+}
+
+export async function createListener(client : Client, key: string, token: string = mockToken(),status = 200) : Promise<{id: string, token: string}> {
+  let id = '';
+  await client.post('/listeners' + api_auth(key)).send(generateListenerDataModel(token)).expect(status).expect(({body}) => { id = body.id });
+  return {id, token};
 }
 
 

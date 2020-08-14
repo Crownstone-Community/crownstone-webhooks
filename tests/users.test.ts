@@ -62,12 +62,12 @@ test("user edit/delete", async () => {
   })
 
   let newName = "not Mike"
-  await client.patch("/users/" + fake_id + admin_auth()).send({name:newName}).expect(401);
+  await client.patch("/users/" + fake_id + admin_auth()).send({name:newName}).expect(404);
   await client.patch("/users/" + mike_id + admin_auth()).send({name:newName}).expect(204);
   await client.get("/users" + admin_auth()).expect(200).expect(({body}) => {
     expect(body[0].name).toBe(newName)
   })
-  await client.del("/users/" + fake_id + admin_auth()).expect(401);
+  await client.del("/users/" + fake_id + admin_auth()).expect(404);
   await client.del("/users/" + mike_id + admin_auth()).expect(204);
   await client.get("/users" + admin_auth()).expect(200).expect([]);
 })

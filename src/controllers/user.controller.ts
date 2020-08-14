@@ -92,17 +92,10 @@ export class UserController {
     @param.path.string('id') id: string,
     @requestBody(UserUpdateSpec) newUser: User,
   ): Promise<void> {
-    try {
-      let user = await this.userRepo.findById(id);
-      WebHookSystem.userChanged(user);
-      return await this.userRepo.updateById(id, newUser);
-    }
-    catch (e) {
-      if (e.code === 'ENTITY_NOT_FOUND') {
-        throw new HttpErrors.Unauthorized()
-      }
-      throw e;
-    }
+    // the findById will throw a 404, which is fine here since it's an admin account
+    let user = await this.userRepo.findById(id);
+    WebHookSystem.userChanged(user);
+    return await this.userRepo.updateById(id, newUser);
   }
 
   @del('/users/{id}')
@@ -110,16 +103,8 @@ export class UserController {
   async deleteUser(
     @param.path.string('id') id: string,
   ): Promise<void> {
-    try {
-      await WebHookSystem.userDeleted(id);
-      await this.listenerRepo.deleteAll({ownerId: id});
-      return await this.userRepo.deleteById(id);
-    }
-    catch (e) {
-      if (e.code === 'ENTITY_NOT_FOUND') {
-        throw new HttpErrors.Unauthorized()
-      }
-      throw e;
-    }
+    await WebHookSystem.userDeleted(id);
+    await this.listenerRepo.deleteAll({ownerId: id});
+    return await this.userRepo.deleteById(id);
   }
 }

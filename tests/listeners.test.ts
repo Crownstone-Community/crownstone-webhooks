@@ -4,7 +4,7 @@ import {
   admin_auth,
   api_auth,
   clearTestDatabase,
-  createApp,
+  createApp, createListener,
   createUser,
   generateListenerDataModel, getListenerRepository, getUserRepository,
 } from "./helpers";
@@ -30,7 +30,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await app.stop()
 })
-
 
 
 test("listener get/set", async () => {
@@ -134,9 +133,43 @@ test("listener exists", async () => {
 })
 
 
+test("listener remove single", async () => {
+  await clearTestDatabase();
+
+  let {token: apiKey_mike} = await createUser(client, 'mike');
+  let {token: apiKey_bob } = await createUser(client, 'bob');
+
+  socketManagerConfig.connected = true;
+  socketManagerConfig.invalidToken = false;
+  await WebHookSystem.initialize();
+
+  let {id: mikeId} = await createListener(client, apiKey_mike)
+  let {id: bobId}  = await createListener(client, apiKey_bob)
+
+  await client.get('/listeners' + api_auth(apiKey_mike)).expect(200).expect(({body}) => { expect(body.length).toBe(1) });
+  await client.get('/listeners' + api_auth(apiKey_bob)) .expect(200).expect(({body}) => { expect(body.length).toBe(1) });
+
+  // cannot delete eachothers listeners
+  await client.del('/listeners/' + bobId  + api_auth(apiKey_mike)).expect(204)
+  await client.del('/listeners/' + mikeId + api_auth(apiKey_bob)).expect(204)
+
+  await client.get('/listeners' + api_auth(apiKey_mike)).expect(200).expect(({body}) => { expect(body.length).toBe(1) });
+  await client.get('/listeners' + api_auth(apiKey_bob)) .expect(200).expect(({body}) => { expect(body.length).toBe(1) });
+
+  // CAN delete own listeners
+  await client.del('/listeners/' + mikeId + api_auth(apiKey_mike)).expect(204)
+  await client.del('/listeners/' + bobId  + api_auth(apiKey_bob)).expect(204)
+
+  await client.get('/listeners' + api_auth(apiKey_mike)).expect(200).expect(({body}) => { expect(body.length).toBe(0) });
+  await client.get('/listeners' + api_auth(apiKey_bob)) .expect(200).expect(({body}) => { expect(body.length).toBe(0) });
+})
+
+
+
+
 test("listener remove user deletion", async () => {
   await clearTestDatabase();
-  let userRepo     = getUserRepository();
+  let userRepo = getUserRepository();
 
   let {token: apiKey_mike, id: id_mike} = await createUser(client, 'mike');
   let {token: apiKey_bob,  id: id_bob}  = await createUser(client, 'bob');
@@ -145,16 +178,17 @@ test("listener remove user deletion", async () => {
   socketManagerConfig.invalidToken = false;
   await WebHookSystem.initialize();
 
+  let {id: mikesListenerId} = await createListener(client, apiKey_mike, 'token3');
   for (let i = 0; i < 10; i++) {
-    await client.post('/listeners' + api_auth(apiKey_mike)).send(generateListenerDataModel('token3')).expect(200);
-    await client.post('/listeners' + api_auth(apiKey_bob)) .send(generateListenerDataModel('token1')).expect(200);
+    await createListener(client, apiKey_mike, 'token3')
+    await createListener(client, apiKey_bob, 'token1')
   }
   for (let i = 0; i < 10; i++) {
-    await client.post('/listeners' + api_auth(apiKey_mike)).send(generateListenerDataModel('token4')).expect(200);
-    await client.post('/listeners' + api_auth(apiKey_bob)) .send(generateListenerDataModel('token2')).expect(200);
+    await createListener(client, apiKey_mike, 'token4')
+    await createListener(client, apiKey_bob, 'token2')
   }
 
-  await client.get('/listeners' + api_auth(apiKey_mike)).expect(200).expect(({body}) => { expect(body.length).toBe(20) });
+  await client.get('/listeners' + api_auth(apiKey_mike)).expect(200).expect(({body}) => { expect(body.length).toBe(21) });
   await client.get('/listeners' + api_auth(apiKey_bob)) .expect(200).expect(({body}) => { expect(body.length).toBe(20) });
 
 
@@ -172,7 +206,7 @@ test("listener remove user deletion", async () => {
   expect(WebHookSystem.tokenTable['token3']).toBeUndefined();
   expect(WebHookSystem.tokenTable['token4']).toBeUndefined();
   // this is a listenerId of mike:
-  expect(WebHookSystem.listenerTable[1]).toBeUndefined();
+  expect(WebHookSystem.listenerTable[mikesListenerId]).toBeUndefined();
 })
 
 
