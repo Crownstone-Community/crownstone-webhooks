@@ -203,14 +203,14 @@ test("check event blocking on usage count limit", async () => {
   await createListener(client, token);
   process.env.DAILY_ALLOWANCE = '2';
 
-  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
-  expect(fetch).toHaveBeenCalledTimes(1)
-  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
-  expect(fetch).toHaveBeenCalledTimes(2)
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId));
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId));
+  expect(fetch).toHaveBeenCalledTimes(2);
 
   // from here on the event should be blocked.
-  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
-  expect(fetch).toHaveBeenCalledTimes(2)
-  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
-  expect(fetch).toHaveBeenCalledTimes(2)
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId));
+  expect(fetch).toHaveBeenCalledTimes(2);
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId));
+  expect(fetch).toHaveBeenCalledTimes(2);
 })

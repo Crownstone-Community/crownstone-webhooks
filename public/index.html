@@ -1,73 +1,202 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <title>Source for the hooks platform of Crownstone</title>
+    <link rel="stylesheet" type="text/css" href="./css/github-markdown.css">
+    <title>Crownstone Webhooks</title>
 
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" type="image/x-icon" href="https://loopback.io/favicon.ico">
+    <style>
+        body {
+            padding:0px;
+            margin:0px;
+            width:100%;
+            height:100%;
+            background-color: #f1f1f1;
+        }
 
-  <style>
-    h3 {
-      margin-left: 25px;
-      text-align: center;
-    }
 
-    a, a:visited {
-      color: #3f5dff;
-    }
+        @media (min-width: 501px) {
+            .grid-container {
+                flex-grow: 1;
+                display: grid;
+                grid-template-rows: 200px auto;
+                grid-template-areas: "header" "content";
+            }
+            pre {
+                white-space: normal;
+            }
+        }
+        @media (min-width: 900px) {
+            .grid-container {
+                flex-grow: 1;
+                display: grid;
+                grid-template-rows: 150px auto;
+                grid-template-columns: 0.1fr 10fr 0.1fr;
+                grid-template-areas: "header header header" "Lpadding content Rpadding";
+            }
+            pre {
+                white-space: pre;
+            }
+        }
 
-    h3 a {
-      margin-left: 10px;
-    }
 
-    a:hover, a:focus, a:active {
-      color: #001956;
-    }
+        @media (min-width: 1200px) {
+            .grid-container {
+                flex-grow: 1;
+                display: grid;
+                grid-template-rows: 250px auto;
+                grid-template-columns: 1fr 900px 1fr;
+                grid-template-areas: "header header header" "Lpadding content Rpadding";
+            }
+        }
+        .gheader {
+            grid-area: header;
+            background-image: url("./img/banner.png");
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Do not repeat the image */
+            background-size: cover; /* Resize the background image to cover the entire container */
+            justify-content: center;
+        }
+        .gcontent {
+            grid-area: content;
+            display: inline-block;
+            width:inherit;
+            min-height: 100vh;
+            background-color: white;
+            padding:30px
+        }
 
-    .power {
-      position: absolute;
-      bottom: 25px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+        .backgroundText {
+            width: 100%;
+            height: 100%;
+            background-image: url("./img/bannerText.png");
+            background-position: center; /* Center the image */
+            background-size: contain; /* Resize the background image to cover the entire container */
+            background-repeat: no-repeat; /* Do not repeat the image */
+        }
 
-    .info {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%)
-    }
+        p {
+            padding-left: 30px;
+        }
 
-    .info h1 {
-      text-align: center;
-      margin-bottom: 0;
-    }
+        button {
+            height:25px;
+        }
 
-    .info p {
-      text-align: center;
-      margin-bottom: 3em;
-      margin-top: 1em;
-    }
-  </style>
+        textarea {
+            width:80%;
+            height:300px;
+            padding:10px;
+        }
+
+        #token {
+            width:50%
+        }
+
+
+    </style>
+
+    <link rel="icon" href="./img/favicon.ico">
 </head>
+<body onload="replaceEmail()" >
+<div class="grid-container">
+    <script>
+        let ask = "ask";
+        let at = "@";
+        let csR = "crownstone.rocks";
+        let gen = function() { return ask+at+csR };
+        function replaceEmail() {
+          let ref = document.getElementById("emailP");
+          ref.innerHTML = ref.innerHTML.replace("%ask[at]crownstone.rocks%",gen());
+        }
+    </script>
+    <div class="gheader">
+        <div class="backgroundText"></div>
+    </div>
+    <div class="gcontent">
+        <article class="markdown-body">
+            <h1>Welcome to the Crownstone Webhook server!</h1>
+            <br />
+            <p>So what is this? Well, there are a lot of things happening with your Crownstones!</p>
+            <p>Every time there is a change in your Sphere, you can get an event from the event server. This is useful if you're listening for events, but what if you have a server
+            that needs to be called when a change occurs?</p>
+            <p>That is why this webhook server exists!</p>
+            <h1>How does it work?</h1>
+            <p id="emailP">You can request an account to use webhooks from Crownstone via %ask[at]crownstone.rocks%. When you have an account, I'll assume you can also get OAUTH2 tokens
+            from the users whose event's you'd like to receive.</p>
+            <p>The available events (assuming you have the right OAUTH access scope for them) are:</p>
+            <ul>
+                <li><a href="https://github.com/crownstone/crownstone-lib-nodejs-sse#command-events">Command events</a></li>
+                <li><a href="https://github.com/crownstone/crownstone-lib-nodejs-sse#presence-events">Presence events</a></li>
+                <li><a href="https://github.com/crownstone/crownstone-lib-nodejs-sse#data-change-events">Data change events</a></li>
+                <li><a href="https://github.com/crownstone/crownstone-lib-nodejs-sse#invitation-change-events">Invitation change events</a></li>
+            </ul>
+            You can subscribe to these using their toplevel type:
+             <ul>
+                 <li>"command"</li>
+                 <li>"presence"</li>
+                 <li>"dataChange"</li>
+                 <li>"abilityChange"</li>
+                 <li>"invitationChange"</li>
+                 <li>"switchStateUpdate"</li>
+            </ul>
+            <h1>Access Scope</h1>
+            Crownstone's OAUTH2 security has the following scopes and event access:
+            <ul>
+                <li><b>"all"</b></b> : all events.</li>
+                <li><b>"user_location"</b> : all presence events as long as the userId matches the token's owner ID.</li>
+                <li><b>"stone_information"</b> : dataChange for stones, abilityChange, switchStateUpdate.</li>
+                <li><b>"sphere_information"</b> : dataChange for stones, locations and spheres.</li>
+                <li><b>"switch_stone"</b> : all command events.</li>
+                <li><b>"location_information"</b> : dataChange for locations (rooms).</li>
+                <li><b>"user_information"</b> : dataChange for users with the userId of the token's owner.</li>
+                <li><b>"power_consumption"</b> : no specific events.</li>
+                <li><b>"user_id"</b> : no specific events.</li>
+            </ul>
 
-<body>
-  <div class="info">
-    <h1>crownstone-hub</h1>
-    <p>Version 1.0.0</p>
+            <h1>How do I use it?</h1>
+            <p>Take a look at the API here: <a href="/explorer">webhook api</a>.</p>
 
-    <h3>OpenAPI spec: <a href="/openapi.json">/openapi.json</a></h3>
-    <h3>API Explorer: <a href="/explorer">/explorer</a></h3>
-  </div>
+            <p>You're a <b>User</b>. If you have an access or oauth token whose events you'd like to forward to a webaddress, these are called <b>Listeners</b>.</p>
 
-  <footer class="power">
-    <a href="https://loopback.io" target="_blank">
-      <img src="https://loopback.io/images/branding/powered-by-loopback/blue/powered-by-loopback-sm.png" />
-    </a>
-  </footer>
+            <p>Use your API KEY to authorize your requests.</p>
+
+            <p>When a listener's token expires, the listeners will be automatically deleted. You can check if they are still actively listening using:</p>
+            <a href="/explorer/#/ListenerController/ListenerController.doesListenerExist" target="_blank">GET /listeners/active</a>
+
+            <br />
+            <br />
+            <p>You can create a new listener here:</p>
+            <a href="/explorer/#/ListenerController/ListenerController.create" target="_blank">POST /listeners</a>
+            <pre>
+{
+  "token": "string",  // this is the access or oauth token
+  "userId": "string", // this is the crownstone user id that belongs to this token
+  "eventTypes": [     // an array of event types (listed above) that you'd like to get delivered to the url:
+    "string"
+  ],
+  "url": "string"     // the url that will be called if an event is forwarded to it.
+}
+            </pre>
+            <br />
+            <p>In case you have multiple listeners with the same token (so you have multiple endpoints on your side invoked), and a listener removes their account with you, use this command to clean up:</p>
+            <a href="/explorer/#/ListenerController/ListenerController.deleteByToken" target="_blank">DELETE /listeners/token</a>
+
+
+            <h1>How is my endpoint invoked?</h1>
+
+            We will call the provided url with a POST request and the following data payload:
+            <pre>
+{
+    clientId:     string,  // this is the ID of your Crownstone Webhook user
+    clientSecret: string,  // this is the secret string you received together with your API KEY.
+    userId:       string,  // this is the userId that belongs to the Crownstone user whose token has received this event
+    data:         SseData  // this is the event payload as described in the sse repository.
+}
+            </pre>
+
+
+        </article>
+    </div>
+
+</div>
 </body>
-
 </html>
