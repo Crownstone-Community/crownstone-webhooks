@@ -80,7 +80,7 @@ export class UserController {
     userData.apiKey = apiKey;
     userData.secret = secret;
     let newUser = await this.userRepo.create(userData);
-    WebHookSystem.userCreated(newUser);
+    await WebHookSystem.userCreated(newUser);
     return newUser;
   }
 
@@ -96,7 +96,7 @@ export class UserController {
 
       // the findById will throw a 404, which is fine here since it's an admin account
       let user = await this.userRepo.findById(id);
-      WebHookSystem.userChanged(user);
+      await WebHookSystem.userChanged(user);
       return
     }
     throw new HttpErrors.NotFound()

@@ -11,6 +11,8 @@ const defaultHeaders = {
   'Content-Type': 'application/json',
 };
 
+process.env.DAILY_ALLOWANCE = '1000';
+
 
 class WebHookSystemClass {
 
@@ -48,16 +50,20 @@ class WebHookSystemClass {
     this.userTable = {};
     for (let i = 0; i < users.length; i++) {
       let user = users[i];
-      this._generateUserMapItem(user);
+      await this._generateUserMapItem(user);
     }
   }
 
-  _generateUserMapItem(user: User) {
-    this.userTable[user.id] = { enabled: user.enabled, secret: user.secret, listeners:[] };
+  async _generateUserMapItem(user: User) {
+    this.userTable[user.id] = {
+      enabled: user.enabled,
+      secret: user.secret,
+      listeners:[],
+      usageCounter: await DbRef.user.getLatestCount(user.id) };
   }
 
   async generateRoutingMap() {
-    this.routingTable = {};
+    this.routingTable  = {};
     this.listenerTable = {};
 
     // there are no users.
@@ -217,7 +223,7 @@ class WebHookSystemClass {
   }
 
 
-  dispatch(event: SseDataEvent) {
+  async dispatch(event: SseDataEvent) {
     // check for sphereId
     if (!event) { return };
 
@@ -238,6 +244,7 @@ class WebHookSystemClass {
       // check owner enabled
       if (this.userTable[hookUserId] === undefined)      { continue; }
       if (this.userTable[hookUserId].enabled === false ) { continue; }
+      if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) { continue; }
 
       // check token expired
       if (routingItem.tokenExpirationTime <= now) {
@@ -257,8 +264,11 @@ class WebHookSystemClass {
       postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
 
       // inrement counter
-      DbRef.usage.increment(hookUserId).catch();
-
+      await DbRef.usage.increment(hookUserId, (count) => {
+        if (this.userTable[hookUserId]) {
+          this.userTable[hookUserId].usageCounter = count;
+        }
+      })
     }
 
     // delete all expired tokens.

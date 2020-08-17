@@ -30,6 +30,7 @@ interface userTable {
 interface userData {
   enabled: boolean,
   secret: string,
+  usageCounter: number,
   listeners: listenerId[]
 }
 

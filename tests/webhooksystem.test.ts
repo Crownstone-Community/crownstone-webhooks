@@ -24,6 +24,7 @@ let client : Client;
 
 
 beforeEach(async () => {
+  process.env.DAILY_ALLOWANCE = '1000';
   await clearTestDatabase();
   resetSocketManagerConfig(socketManagerConfig, socketManagerDefaultConfig)
   WebHookSystem.reset();
@@ -189,5 +190,27 @@ test("check event blocking on disabled user", async () => {
 
   // we should receive this event, if our user was enabled.
   WebHookSystem.dispatch(getDataChangeEvent(sphereId))
+  expect(fetch).toHaveBeenCalledTimes(2)
+})
+
+test("check event blocking on usage count limit", async () => {
+  let {token, id} = await createUser(client);
+
+  let sphereId = "testSphereId";
+  socketManagerConfig.sphereId = sphereId;
+  await WebHookSystem.initialize();
+
+  await createListener(client, token);
+  process.env.DAILY_ALLOWANCE = '2';
+
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
+  expect(fetch).toHaveBeenCalledTimes(1)
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
+  expect(fetch).toHaveBeenCalledTimes(2)
+
+  // from here on the event should be blocked.
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
+  expect(fetch).toHaveBeenCalledTimes(2)
+  await WebHookSystem.dispatch(getDataChangeEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(2)
 })

@@ -7,3 +7,4 @@ coverage
 *.sh
 
 dist
+!execute.js
