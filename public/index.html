@@ -121,7 +121,7 @@
             <p>That is why this webhook server exists!</p>
             <h1>How does it work?</h1>
             <p id="emailP">You can request an account to use webhooks from Crownstone via %ask[at]crownstone.rocks%. When you have an account, I'll assume you can also get OAUTH2 tokens
-            from the users whose event's you'd like to receive.</p>
+            from the users whose events you'd like to receive.</p>
             <p>The available events (assuming you have the right OAUTH access scope for them) are:</p>
             <ul>
                 <li><a href="https://github.com/crownstone/crownstone-lib-nodejs-sse#command-events">Command events</a></li>
@@ -155,7 +155,7 @@
             <h1>How do I use it?</h1>
             <p>Take a look at the API here: <a href="/explorer">webhook api</a>.</p>
 
-            <p>You're a <b>User</b>. If you have an access or oauth token whose events you'd like to forward to a webaddress, these are called <b>Listeners</b>.</p>
+            <p>You're a <b>User</b>. For each user of your service, you'll have a Crownstone OAUTH token. For each token you have you can create one or more <b>Listeners</b>. Listeners subscribe to their events and forward them to your url.</p>
 
             <p>Use your API KEY to authorize your requests.</p>
 
