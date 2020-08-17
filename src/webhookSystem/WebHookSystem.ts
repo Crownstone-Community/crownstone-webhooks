@@ -58,8 +58,10 @@ class WebHookSystemClass {
     this.userTable[user.id] = {
       enabled: user.enabled,
       secret: user.secret,
-      listeners:[],
-      usageCounter: await DbRef.user.getLatestCount(user.id) };
+      listeners: [],
+      usageCounter: await DbRef.user.getLatestCount(user.id),
+      counterUpdated: false,
+    };
   }
 
   async generateRoutingMap() {
@@ -263,17 +265,28 @@ class WebHookSystemClass {
       // post
       postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
 
-      // inrement counter
-      await DbRef.usage.increment(hookUserId, (count) => {
-        if (this.userTable[hookUserId]) {
-          this.userTable[hookUserId].usageCounter = count;
-        }
-      })
+      // increment usage counter;
+      this.userTable[hookUserId].usageCounter++;
+      this.userTable[hookUserId].counterUpdated = true;
+
     }
 
     // delete all expired tokens.
     for (let i = 0; i < expiredTokens.length; i++) {
       this.tokenDeleted(expiredTokens[i]);
+    }
+
+    return this._updateCounters();
+  }
+
+  async _updateCounters() {
+    let userIds = Object.keys(this.userTable);
+    for (let i = 0; i < userIds.length; i++) {
+      let userId = userIds[i];
+      if (this.userTable[userIds[i]].counterUpdated === true) {
+        await DbRef.usage.setCount(userId, this.userTable[userId].usageCounter);
+        this.userTable[userId].counterUpdated = false;
+      }
     }
   }
 

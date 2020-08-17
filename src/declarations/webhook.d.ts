@@ -31,6 +31,7 @@ interface userData {
   enabled: boolean,
   secret: string,
   usageCounter: number,
+  counterUpdated: boolean,
   listeners: listenerId[]
 }
 
