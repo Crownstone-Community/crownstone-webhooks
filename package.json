@@ -1,5 +1,5 @@
 {
-  "name": "Crownstone Webhooks",
+  "name": "Crownstone-Webhooks",
   "version": "1.0.0",
   "description": "Forward the SSE events to an external endpoint.",
   "main": "index.js",
