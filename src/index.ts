@@ -7,7 +7,7 @@ import {SocketManager} from "./sockets/socket/SocketManager";
 
 Error.stackTraceLimit = 100;
 export async function main(options: ApplicationConfig = {}) {
-  SocketManager.setCallback(WebHookSystem.dispatch)
+  SocketManager.setCallback((event) => { WebHookSystem.dispatch(event); });
   SocketManager.setupConnection();
 
   const app = new CrownstoneHooksApplication();
