@@ -16,11 +16,11 @@ export class AdminKeyStrategy implements AuthenticationStrategy {
   ) {}
 
   async authenticate(request: Request): Promise<UserProfile | undefined> {
-    if (!request.query.admin_key) {
+    let admin_key = request.header('admin_key') || request.header('ADMIN_KEY') || request.header('Bearer') || request.query.admin_key;
+    if (!admin_key) {
       throw new HttpErrors.Unauthorized(`admin key not found.`);
     }
-    let adminKey = request.query.admin_key;
-    if (adminKey !== process.env.CROWNSTONE_USER_ADMIN_KEY) {
+    if (admin_key !== process.env.CROWNSTONE_USER_ADMIN_KEY) {
       throw new HttpErrors.Unauthorized(`Unauthorized.`);
     }
 

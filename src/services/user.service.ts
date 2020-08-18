@@ -9,7 +9,7 @@ export class UserService {
   async checkApiKey(token: string): Promise<User> {
     const invalidCredentialsError = 'Invalid ApiKey.';
 
-    const foundUser = await this.userRepository.findOne({where: {apiKey: token}});
+    const foundUser = await this.userRepository.findOne({where: {apiKey: token}}, {fields:{id: true}});
     if (!foundUser) {
       throw new HttpErrors.Unauthorized(invalidCredentialsError);
     }

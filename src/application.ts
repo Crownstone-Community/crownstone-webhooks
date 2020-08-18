@@ -39,12 +39,12 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
       components: {securitySchemes: {
         apiKey: {
           type: 'apiKey',
-          in: 'query',
+          in: 'header',
           name:'api_key'
         },
         adminKey: {
           type: 'apiKey',
-          in: 'query',
+          in: 'header',
           name:'admin_key'
         },
         }},

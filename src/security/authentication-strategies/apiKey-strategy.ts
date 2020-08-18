@@ -19,11 +19,11 @@ export class ApiKeyStrategy implements AuthenticationStrategy {
   ) {}
 
   async authenticate(request: Request): Promise<UserProfile | undefined> {
-    if (!request.query.api_key) {
+    let api_key = request.header('api_key') || request.header('API_KEY') || request.header('Bearer') || request.query.api_key;
+    if (!api_key) {
       throw new HttpErrors.Unauthorized(`Api key not found.`);
     }
-    let apiKey = request.query.api_key;
-    let user = await this.userService.checkApiKey(apiKey as string)
+    let user = await this.userService.checkApiKey(api_key as string)
 
     let userProfile : UserProfileDescription = {
       [securityId]: user.id,
