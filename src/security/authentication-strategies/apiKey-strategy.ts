@@ -19,7 +19,13 @@ export class ApiKeyStrategy implements AuthenticationStrategy {
   ) {}
 
   async authenticate(request: Request): Promise<UserProfile | undefined> {
-    let api_key = request.header('api_key') || request.header('API_KEY') || request.header('Bearer') || request.query.api_key;
+    let api_key : string = String(
+      request.header('api_key') ||
+      request.header('API_KEY') ||
+      request.header('Authorization') ||
+      request.query.api_key
+    );
+    api_key = api_key.replace("Bearer ",'');
     if (!api_key) {
       throw new HttpErrors.Unauthorized(`Api key not found.`);
     }

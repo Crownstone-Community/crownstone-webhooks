@@ -16,7 +16,14 @@ export class AdminKeyStrategy implements AuthenticationStrategy {
   ) {}
 
   async authenticate(request: Request): Promise<UserProfile | undefined> {
-    let admin_key = request.header('admin_key') || request.header('ADMIN_KEY') || request.header('Bearer') || request.query.admin_key;
+    let admin_key : string = String(
+      request.header('admin_key') ||
+      request.header('ADMIN_KEY') ||
+      request.header('Authorization') ||
+      request.query.admin_key
+    );
+    admin_key = admin_key.replace("Bearer ",'');
+
     if (!admin_key) {
       throw new HttpErrors.Unauthorized(`admin key not found.`);
     }
