@@ -22,11 +22,12 @@ export class AdminKeyStrategy implements AuthenticationStrategy {
       request.header('Authorization') ||
       request.query.admin_key
     );
-    admin_key = admin_key.replace("Bearer ",'');
 
     if (!admin_key) {
       throw new HttpErrors.Unauthorized(`admin key not found.`);
     }
+    admin_key = admin_key.replace("Bearer ",'');
+
     if (admin_key !== process.env.CROWNSTONE_USER_ADMIN_KEY) {
       throw new HttpErrors.Unauthorized(`Unauthorized.`);
     }

@@ -25,10 +25,10 @@ export class ApiKeyStrategy implements AuthenticationStrategy {
       request.header('Authorization') ||
       request.query.api_key
     );
-    api_key = api_key.replace("Bearer ",'');
     if (!api_key) {
       throw new HttpErrors.Unauthorized(`Api key not found.`);
     }
+    api_key = api_key.replace("Bearer ",'');
     let user = await this.userService.checkApiKey(api_key as string)
 
     let userProfile : UserProfileDescription = {
