@@ -18,8 +18,9 @@ export class AdminKeyStrategy implements AuthenticationStrategy {
   async authenticate(request: Request): Promise<UserProfile | undefined> {
     let admin_key : string = String(
       request.header('admin_key') ||
-      request.header('ADMIN_KEY') ||
-      request.header('Authorization') ||
+      request.header('ADMIN_KEY')        ||
+      request.header('access_token')     ||
+      request.header('Authorization')    ||
       request.query.admin_key
     );
 

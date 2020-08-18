@@ -21,8 +21,9 @@ export class ApiKeyStrategy implements AuthenticationStrategy {
   async authenticate(request: Request): Promise<UserProfile | undefined> {
     let api_key : string = String(
       request.header('api_key') ||
-      request.header('API_KEY') ||
-      request.header('Authorization') ||
+      request.header('API_KEY')        ||
+      request.header('access_token')   ||
+      request.header('Authorization')  ||
       request.query.api_key
     );
     if (!api_key) {
