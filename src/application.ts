@@ -31,7 +31,6 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
       customPort = options.rest.port;
     }
 
-    console.log("optoins", options,  {...options, rest: { ...options.rest, port: customPort }})
     super({...options, rest: { ...options.rest, port: customPort }})
 
     this.api({

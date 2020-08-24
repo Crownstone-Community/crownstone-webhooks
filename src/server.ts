@@ -25,9 +25,9 @@ export class ExpressServer {
     this.app.use('/api', this.lbApp.requestHandler);
 
     // Custom Express routes
-    // this.app.get('/', function (_req: Request, res: Response) {
-    //   res.sendFile(path.join(__dirname, '../public/index.html'));
-    // });
+    this.app.get('/', function (_req: Request, res: Response) {
+      res.sendFile(path.join(__dirname, '../public/index.html'));
+    });
 
     // Serve static files in the public folder
     this.app.use(express.static(path.join(__dirname, '../public')));
