@@ -59,7 +59,7 @@ export async function main(options: ApplicationConfig = {}) {
   await server.start();
 
   const port = server.lbApp.restServer.config.port ?? 3000;
-  const host = server.lbApp.restServer.config.host ?? '127.0.0.1';
+  const host = server.lbApp.restServer.config.host ?? 'NO-HOST';
 
   DbRef.listeners = await server.lbApp.getRepository(EventListenerRepository);
   DbRef.usage     = await server.lbApp.getRepository(UsageHistoryRepository);

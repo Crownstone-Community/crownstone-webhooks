@@ -31,7 +31,12 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
       customPort = options.rest.port;
     }
 
-    super({...options, rest: { ...options.rest, port: customPort }})
+    let customHost = process.env.HOST || '127.0.0.1';
+    if (options.rest && options.rest.host !== undefined) {
+      customHost = options.rest.host;
+    }
+
+    super({...options, rest: { ...options.rest, port: customPort, host: customHost }})
 
     this.api({
       openapi: '3.0.0',
