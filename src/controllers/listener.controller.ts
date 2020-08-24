@@ -3,7 +3,7 @@
 // import {inject} from '@loopback/context';
 
 import {Count, repository} from '@loopback/repository';
-import {del, get, getModelSchemaRef, param, post, requestBody, RestHttpErrors} from '@loopback/rest';
+import {api, del, get, getModelSchemaRef, param, post, requestBody, RestHttpErrors} from '@loopback/rest';
 import {EventListenerRepository, UserRepository} from "../repositories";
 import {authenticate} from "@loopback/authentication";
 import {UserProfileDescription} from "../security/authentication-strategies/apiKey-strategy";
