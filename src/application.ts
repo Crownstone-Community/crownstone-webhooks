@@ -54,7 +54,7 @@ export class CrownstoneHooksApplication extends BootMixin(ServiceMixin(Repositor
           name:'admin_key'
         },
         }},
-      // servers:  [{url: '/api'}],
+      servers:  [{url: '/api'}],
       security: [{apiKey: []}, {adminKey: []}],
     });
 
