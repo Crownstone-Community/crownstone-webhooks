@@ -35,8 +35,8 @@ class WebHookSystemClass {
         await Util.wait(250)
       }
 
-      await this.generateUserMap()
-      await this.generateRoutingMap()
+      await this.generateUserMap();
+      await this.generateRoutingMap();
 
       this.initialized = true;
     }
@@ -135,6 +135,7 @@ class WebHookSystemClass {
       }
     }
   }
+
 
   tokenDeleted(token: string) {
     if (this.tokenTable[token] === undefined) { return; }

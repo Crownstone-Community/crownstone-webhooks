@@ -36,11 +36,24 @@ export class ListenerController {
   async doesListenerExist(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
     @param.query.string('token') token: string,
+    @param.query.string('userId') crownstoneUserId: string,
   ): Promise<boolean> {
     let userId = userProfile[securityId];
-    let listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, token: token}}, {fields: {id:true}})
+    let listenerId = null;
+    if (token && crownstoneUserId) {
+      listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, userId: crownstoneUserId, token: token}}, {fields: {id:true}})
+    }
+    else if (token) {
+      listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, token: token}}, {fields: {id:true}})
+    }
+    else if (crownstoneUserId) {
+      listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, userId: crownstoneUserId}}, {fields: {id:true}})
+    }
+
     return listenerId != null;
+
   }
+
 
   // create a new listener
   @post('/listeners')
@@ -93,6 +106,23 @@ export class ListenerController {
     let count = await this.userRepo.eventListeners(userProfile[securityId]).delete({token: token});
     if (count.count > 0) {
       WebHookSystem.tokenDeleted(token);
+    }
+    return count;
+  }
+
+   // delete multiple listeners that use a token.
+  @del('/listeners/userId')
+  @authenticate('apiKey')
+  async deleteByUserId(
+    @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
+    @param.query.string('userId', {required:true}) crownstoneUserId: string,
+  ): Promise<Count> {
+    let tokens = await this.userRepo.eventListeners(userProfile[securityId]).find({where: {userId: crownstoneUserId}, fields: {token: true}});
+    let count = await this.userRepo.eventListeners(userProfile[securityId]).delete({userId: crownstoneUserId});
+    if (count.count > 0) {
+      for (let i = 0; i < tokens.length; i++) {
+        WebHookSystem.tokenDeleted(tokens[i].token);
+      }
     }
     return count;
   }

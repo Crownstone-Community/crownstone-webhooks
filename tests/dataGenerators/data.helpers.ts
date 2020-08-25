@@ -25,10 +25,10 @@ export async function createUser(client: Client, userName? : string) : Promise<{
 
 
 
-export function generateListenerDataModel(token: string = 'thisIsAnOauthToken', url: string = 'http://localhost:test/endpoint', events = ["dataChange"]) {
+export function generateListenerDataModel(token: string = 'thisIsAnOauthToken', url: string = 'http://localhost:test/endpoint', events = ["dataChange"], userId = 'CrownstoneUserId') {
   return {
     token: token,
-    userId: 'CrownstoneUserId',
+    userId: userId,
     eventTypes: events,
     url: url
   }

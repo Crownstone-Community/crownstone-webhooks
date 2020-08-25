@@ -38,7 +38,6 @@ export class ExpressServer {
   }
 
   public async start() {
-    console.log("Start")
     await this.lbApp.start();
     const port = this.lbApp.restServer.config.port ?? 3000;
     const host = this.lbApp.restServer.config.host ?? 'NO-HOST';

@@ -119,9 +119,11 @@ test("listener exists", async () => {
   socketManagerConfig.invalidToken = false;
   await WebHookSystem.initialize();
 
-  await client.post('/listeners' + api_auth(token)).send(generateListenerDataModel('token1')).expect(200);
+  await client.post('/listeners' + api_auth(token)).send(generateListenerDataModel('token1', undefined, undefined, 'user1')).expect(200);
   await client.get('/listeners/active' + api_auth(token) + '&token=token1').expect(200).expect(({body}) => { expect(body).toBe(true) });
   await client.get('/listeners/active' + api_auth(token) + '&token=token2').expect(200).expect(({body}) => { expect(body).toBe(false) });
+  await client.get('/listeners/active' + api_auth(token) + '&userId=user2').expect(200).expect(({body}) => { expect(body).toBe(false) });
+  await client.get('/listeners/active' + api_auth(token) + '&userId=user1').expect(200).expect(({body}) => { expect(body).toBe(true) });
   await client.get('/listeners/active' + api_auth('test') + '&token=token2').expect(401)
 })
 
@@ -200,5 +202,32 @@ test("listener remove user deletion", async () => {
 })
 
 
+
+
+
+test("listener remove by crownstoneUserId", async () => {
+  let listenerRepo = getListenerRepository();
+
+  let {token: apiKey_mike, id: id_mike} = await createUser(client, 'mike');
+
+  socketManagerConfig.connected = true;
+  socketManagerConfig.invalidToken = false;
+  await WebHookSystem.initialize();
+
+  for (let i = 0; i < 10; i++) {
+    await client.post('/listeners' + api_auth(apiKey_mike)).send(generateListenerDataModel('token1', undefined, undefined, 'user1')).expect(200);
+    await client.post('/listeners' + api_auth(apiKey_mike)).send(generateListenerDataModel('token2', undefined, undefined, 'user1')).expect(200);
+    await client.post('/listeners' + api_auth(apiKey_mike)).send(generateListenerDataModel('token3', undefined, undefined, 'user2')).expect(200);
+  }
+
+  expect(await listenerRepo.find({})).toHaveLength(30)
+
+  await client.del('/listeners/userId' + api_auth(apiKey_mike) + "&userId=user1").expect(200)
+
+  expect(Object.keys(WebHookSystem.tokenTable).length).toBe(1)
+  expect(JSON.stringify(WebHookSystem.routingTable).indexOf('user1')).toBe(-1)
+  expect(JSON.stringify(WebHookSystem.routingTable).indexOf('user2') !== -1).toBe(true)
+  expect(await listenerRepo.find({})).toHaveLength(10)
+})
 
 
