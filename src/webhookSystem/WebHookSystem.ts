@@ -236,7 +236,6 @@ class WebHookSystemClass {
     let eventType = event.type;
     let sphereId = event.sphere?.id;
 
-    console.log("event sphereId", sphereId);
     if (eventType === undefined || this.routingTable[sphereId] === undefined) { return; }
 
     let now = new Date().valueOf()
@@ -246,17 +245,13 @@ class WebHookSystemClass {
     // loop over items
     for (let i = 0; i < this.routingTable[sphereId].length; i++) {
       let routingItem = this.routingTable[sphereId][i];
-      console.log("event routing item", routingItem);
 
       let hookUserId = routingItem.ownerId;
 
       // check owner enabled
       if (this.userTable[hookUserId] === undefined)      { continue; }
-      console.log('event pass', 1)
       if (this.userTable[hookUserId].enabled === false ) { continue; }
-      console.log('event pass', 2)
       if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) { continue; }
-      console.log('event pass', 3)
 
       // check token expired
       if (routingItem.tokenExpirationTime <= now) {
@@ -265,15 +260,12 @@ class WebHookSystemClass {
         }
         continue;
       }
-      console.log('event pass', 4)
 
       // check for event type
       if (routingItem.events[eventType] !== true) { continue; }
-      console.log('event pass', 5)
 
       // check authentication
       if (checkScopePermissions(routingItem.scopeAccess, event) === false) { continue; }
-      console.log('event pass', 6)
 
       // post
       postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
@@ -329,11 +321,7 @@ async function postToUrl(clientId: string, clientSecret: string, userId: string,
     data: data,
   }
   try {
-    console.log("Invoking", url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
     let result = await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
-    console.log(result);
-
-    console.log(await result.text());
   }
   catch(e) { console.log("error", e)}
 }
