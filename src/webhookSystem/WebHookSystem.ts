@@ -11,7 +11,9 @@ const defaultHeaders = {
   'Content-Type': 'application/json',
 };
 
-process.env.DAILY_ALLOWANCE = '1000';
+if (process.env.DAILY_ALLOWANCE === undefined) {
+  process.env.DAILY_ALLOWANCE = '1000';
+}
 
 
 class WebHookSystemClass {
@@ -318,6 +320,7 @@ async function postToUrl(clientId: string, clientSecret: string, userId: string,
     data: data,
   }
   try {
+    console.log("Invoking", url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
     await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
   }
   catch(e) {}
