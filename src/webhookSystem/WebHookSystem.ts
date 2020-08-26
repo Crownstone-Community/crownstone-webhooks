@@ -230,7 +230,6 @@ class WebHookSystemClass {
 
 
   async dispatch(event: SseDataEvent) {
-    console.log('recevied event')
     // check for sphereId
     if (!event) { return };
 
@@ -283,13 +282,11 @@ class WebHookSystemClass {
       this.userTable[hookUserId].usageCounter++;
       this.userTable[hookUserId].counterUpdated = true;
     }
-    console.log("event handled")
 
     // delete all expired tokens.
     for (let i = 0; i < expiredTokens.length; i++) {
       this.tokenDeleted(expiredTokens[i]);
     }
-    console.log("tokens deletion check finished")
 
     return this._updateCounters();
   }
@@ -333,9 +330,12 @@ async function postToUrl(clientId: string, clientSecret: string, userId: string,
   }
   try {
     console.log("Invoking", url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
-    await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
+    let result = await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
+    console.log(result);
+
+    console.log(await result.text());
   }
-  catch(e) {}
+  catch(e) { console.log("error", e)}
 }
 
 export const WebHookSystem = new WebHookSystemClass();
