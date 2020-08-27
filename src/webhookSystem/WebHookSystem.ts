@@ -6,6 +6,9 @@ import {EventListener, User} from "../models";
 import {SocketManager} from "../sockets/socket/SocketManager";
 import {HttpErrors} from "@loopback/rest";
 
+const LOG = require('debug-level')('crownstone-webhook-system-core')
+const LOGevents = require('debug-level')('crownstone-verbose-webhook-system')
+
 const defaultHeaders = {
   'Accept': 'application/json',
   'Content-Type': 'application/json',
@@ -32,16 +35,20 @@ class WebHookSystemClass {
     this.initializing = true;
 
     try {
+      LOG.info("initializing Webhook system...")
       // get all users and listeners
       while (SocketManager.isConnected() === false) {
         await Util.wait(250)
       }
+      LOG.info("sockets connected.")
 
       await this.generateUserMap();
+      LOG.info("userMap generated.")
       await this.generateRoutingMap();
+      LOG.info("routingMap generated.")
 
       this.initialized = true;
-      console.log("initialized Webhook system.")
+      LOG.info("initialized Webhook system.")
     }
     catch (e) {
       setTimeout(() => { this.initializing = false; this.initialize() }, 1000);
@@ -230,6 +237,7 @@ class WebHookSystemClass {
 
 
   async dispatch(event: SseDataEvent) {
+    LOGevents.debug("Receiving event", event)
     // check for sphereId
     if (!event) { return };
 
@@ -243,6 +251,7 @@ class WebHookSystemClass {
     let expiredTokens = [];
 
     // loop over items
+    LOGevents.info("Starting routing check...")
     for (let i = 0; i < this.routingTable[sphereId].length; i++) {
       let routingItem = this.routingTable[sphereId][i];
 
@@ -250,8 +259,11 @@ class WebHookSystemClass {
 
       // check owner enabled
       if (this.userTable[hookUserId] === undefined)      { continue; }
+      LOGevents.info("Passed user exists check...")
       if (this.userTable[hookUserId].enabled === false ) { continue; }
+      LOGevents.info("Passed user enabled check...")
       if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) { continue; }
+      LOGevents.info("Passed user daily allowance check...")
 
       // check token expired
       if (routingItem.tokenExpirationTime <= now) {
@@ -260,12 +272,15 @@ class WebHookSystemClass {
         }
         continue;
       }
+      LOGevents.info("Passed token expiration check...");
 
       // check for event type
       if (routingItem.events[eventType] !== true) { continue; }
+      LOGevents.info("Passed event type check...");
 
       // check authentication
       if (checkScopePermissions(routingItem.scopeAccess, event) === false) { continue; }
+      LOGevents.info("Passed scope check...");
 
       // post
       postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
@@ -320,10 +335,13 @@ async function postToUrl(clientId: string, clientSecret: string, userId: string,
     userId: userId,
     data: data,
   }
+  let token = Math.floor(Math.random()*1e8).toString(36)
   try {
+    LOG.debug("Posting to ", url, data, token);
     let result = await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
+    LOG.debug("Post complete.", token);
   }
-  catch(e) { console.log("error", e)}
+  catch(e) { LOG.info("Post failed.",e, token) }
 }
 
 export const WebHookSystem = new WebHookSystemClass();
