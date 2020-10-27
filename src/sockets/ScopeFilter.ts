@@ -1,5 +1,5 @@
 
-export function generateFilterFromScope(scopes : string[], userId: string): ScopeFilter | true {
+export function generateFilterFromScope(scopes : oauthScope[], userId: string): ScopeFilter | true {
   if (scopes.indexOf("all") !== -1) {
     return true;
   }
