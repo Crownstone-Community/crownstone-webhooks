@@ -3,8 +3,8 @@ import {DbRef} from "./DbReference";
 import {Util} from "../util/Util";
 import {checkScopePermissions, generateFilterFromScope} from "../sockets/ScopeFilter";
 import {EventListener, User} from "../models";
-import {SocketManager} from "../sockets/socket/SocketManager";
 import {HttpErrors} from "@loopback/rest";
+import {SocketManager, SocketManager_next} from "../sockets/socket/SocketManagers";
 
 const LOG = require('debug-level')('crownstone-webhook-system-core')
 const LOGevents = require('debug-level')('crownstone-verbose-webhook-system')
@@ -37,10 +37,6 @@ class WebHookSystemClass {
     try {
       LOG.info("initializing Webhook system...")
       // get all users and listeners
-      while (SocketManager.isConnected() === false) {
-        await Util.wait(250)
-      }
-      LOG.info("sockets connected.")
 
       await this.generateUserMap();
       LOG.info("userMap generated.")

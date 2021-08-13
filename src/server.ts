@@ -9,8 +9,20 @@ import http from 'http';
 import path from 'path';
 import {CrownstoneHooksApplication} from "./application";
 import { ApplicationConfig } from '@loopback/core';
+import {SocketManager, SocketManager_next} from "./sockets/socket/SocketManagers";
+import {WebHookSystem} from "./webhookSystem/WebHookSystem";
 
 export {ApplicationConfig};
+
+if (process.env["CROWNSTONE_CLOUD_SOCKET_ENDPOINT"]) {
+  SocketManager.setCallback((event) => { WebHookSystem.dispatch(event); })
+  SocketManager.setupConnection(process.env["CROWNSTONE_CLOUD_SOCKET_ENDPOINT"] as string);
+}
+
+if (process.env["CROWNSTONE_CLOUD_NEXT_SOCKET_ENDPOINT"]) {
+  SocketManager_next.setCallback((event) => { WebHookSystem.dispatch(event); })
+  SocketManager_next.setupConnection(process.env["CROWNSTONE_CLOUD_NEXT_SOCKET_ENDPOINT"] as string);
+}
 
 export class ExpressServer {
   public readonly app: express.Application;

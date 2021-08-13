@@ -18,7 +18,7 @@ const errors = {
   invalidResponse: 'invalidResponse',
 }
 
-class SocketManagerClass {
+export class SocketManagerClass {
   // @ts-ignore
   socket : Socket;
   reconnectAfterCloseTimeout : Timeout | undefined;
@@ -34,15 +34,17 @@ class SocketManagerClass {
     this.eventCallback = eventCallback;
   }
 
-  setupConnection() {
-    console.log("Connecting to ", process.env["CROWNSTONE_CLOUD_SOCKET_ENDPOINT"])
-    this.socket = io(process.env["CROWNSTONE_CLOUD_SOCKET_ENDPOINT"] as string, { transports: ['websocket'], autoConnect: true});
+  setupConnection(url: string) {
+    console.log("Connecting to ", url)
+    this.socket = io(url, { transports: ['websocket'], autoConnect: true});
 
-    this.socket.on("connect",             () => { console.log("Connected to Crownstone SSE Server host.") })
+    this.socket.on("connect",             () => { console.log("Connected to Crownstone SSE Server host at", url) })
     this.socket.on("reconnect_attempt",   () => {
+      console.log("Attempting to reconnect to...", url);
       this.reconnectCounter += 1;
       if (this.reconnectAfterCloseTimeout) {
         clearTimeout(this.reconnectAfterCloseTimeout);
+        this.reconnectAfterCloseTimeout = undefined;
       }
     })
 
@@ -51,17 +53,24 @@ class SocketManagerClass {
       let output = hasher.update(data + (process.env["CROWNSTONE_CLOUD_SSE_TOKEN"] as string)).digest('hex');
       callback(output)
 
-      this.socket.removeAllListeners();
+      console.log("Authentication challenge completed with", url)
+      this.socket.removeListener(protocolTopics.event);
       this.socket.on(protocolTopics.event, (data: SseDataEvent) => { this.eventCallback(data); });
     });
 
     this.socket.on('disconnect', () => {
+      console.warn("disconnected from", url);
+      if (this.reconnectAfterCloseTimeout) {
+        clearTimeout(this.reconnectAfterCloseTimeout);
+        this.reconnectAfterCloseTimeout = undefined;
+      }
       this.reconnectAfterCloseTimeout = setTimeout(() => {
+        console.log("Triggering reconnect to", url)
         this.socket.removeAllListeners()
         // on disconnect, all events are destroyed so we can just re-initialize.
         // under normal circumstances, the reconnect would take over and it will clear this timeout.
         // This is just in case of a full, serverside, disconnect.
-        this.setupConnection();
+        this.setupConnection(url);
       }, RETRY_TIMEOUT );
     });
   }
@@ -77,8 +86,10 @@ class SocketManagerClass {
       let responseValid = true;
       let tokenValidityCheckTimeout = setTimeout(() => {
         responseValid = false;
+        console.warn("Timeout validating accessToken.");
+        this.socket.close();
         reject(errors.couldNotVerifyToken);
-      }, 3000);
+      }, 10000);
 
       // request the token to be checked, and a accessmodel returned
       this.socket.emit(requestType, token, (reply : any) => {
@@ -87,9 +98,11 @@ class SocketManagerClass {
         if (responseValid === false) { return; }
 
         if (reply?.code !== 200) {
+          console.warn("Invalid token received in request.");
           reject(errors.invalidToken);
         }
         else if (reply?.data) {
+          console.log("Token validation finished.");
           resolve(reply?.data);
         }
         else {
@@ -117,4 +130,4 @@ class SocketManagerClass {
   }
 }
 
-export const SocketManager = new SocketManagerClass();
+
