@@ -41,6 +41,21 @@ export class ExpressServer {
       res.sendFile(path.join(__dirname, '../public/index.html'));
     });
 
+
+    this.app.get('/debug', function(req : Request, res : Response) {
+      let validationToken = process.env.DEBUG_TOKEN || "debug"
+      if (req.query.token === validationToken) {
+        let debugInformation = {
+          connected: SocketManager.isConnected(),
+          connectedNext: SocketManager_next.isConnected(),
+        };
+        res.end(JSON.stringify(debugInformation))
+      }
+      else {
+        res.end("Invalid token.")
+      }
+    })
+
     // Serve static files in the public folder
     this.app.use(express.static(path.join(__dirname, '../public')));
   }
