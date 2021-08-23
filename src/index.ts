@@ -18,15 +18,19 @@ export async function main(options: ApplicationConfig = {}) {
   await server.start();
 
   const port = server.lbApp.restServer.config.port ?? 3000;
-  const host = server.lbApp.restServer.config.host ?? 'NO-HOST';
+  // const host = server.lbApp.restServer.config.host ?? 'NO-HOST';
+
+  console.log("Using configuration port:", port, 'options', options);
 
   DbRef.listeners = await server.lbApp.getRepository(EventListenerRepository);
   DbRef.usage     = await server.lbApp.getRepository(UsageHistoryRepository);
   DbRef.user      = await server.lbApp.getRepository(UserRepository);
 
+  console.log(`Server initializing the webhook system`);
+
   await WebHookSystem.initialize();
 
-  console.log(`Server is running at ${host}:${port}`);
+  console.log(`Server is running at ${port}`);
 
   return server.lbApp;
 }
