@@ -37,6 +37,10 @@ class WebHookSystemClass {
     while (SocketManager.isConnected() === false) {
       await Util.wait(250)
     }
+
+    while (SocketManager_next.isConnected() === false) {
+      await Util.wait(250)
+    }
     LOG.info("sockets connected.")
 
     try {

@@ -58,8 +58,8 @@ export class ExpressServer {
   public async start() {
     await this.lbApp.start();
     const port = this.lbApp.restServer.config.port ?? 3000;
-    // const host = this.lbApp.restServer.config.host ?? 'NO-HOST';
-    this.server = this.app.listen(port);
+    const host = this.lbApp.restServer.config.host ?? 'NO-HOST';
+    this.server = this.app.listen(port, host);
     await once(this.server, 'listening');
   }
 

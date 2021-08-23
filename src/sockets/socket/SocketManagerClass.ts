@@ -79,7 +79,12 @@ export class SocketManagerClass {
   }
 
   isConnected() {
-    return this.socket.connected;
+    if (this.url) {
+      return this.socket.connected;
+    }
+    else {
+      return true;
+    }
   }
 
   _isValidToken(token: string, requestType: string) : Promise<AccessModel | false> {
