@@ -34,21 +34,20 @@ class WebHookSystemClass {
     if (this.initializing === true) { return; }
     this.initializing = true;
 
-    try {
-      LOG.info("initializing Webhook system...")
-      // get all users and listeners
-
-      await this.generateUserMap();
-      LOG.info("userMap generated.")
-      await this.generateRoutingMap();
-      LOG.info("routingMap generated.")
-
-      this.initialized = true;
-      LOG.info("initialized Webhook system.")
-    }
-    catch (e) {
-      setTimeout(() => { this.initializing = false; this.initialize() }, 1000);
-    }
+    //
+    // try {
+    //   LOG.info("initializing Webhook system...")
+    //   await this.generateUserMap();
+    //   LOG.info("userMap generated.")
+    //   await this.generateRoutingMap();
+    //   LOG.info("routingMap generated.")
+    //
+    //   this.initialized = true;
+    //   LOG.info("initialized Webhook system.")
+    // }
+    // catch (e) {
+    //   setTimeout(() => { this.initializing = false; this.initialize() }, 1000);
+    // }
   }
 
   async generateUserMap() {

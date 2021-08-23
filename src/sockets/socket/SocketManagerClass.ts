@@ -24,6 +24,8 @@ export class SocketManagerClass {
   reconnectAfterCloseTimeout : Timeout | undefined;
   reconnectCounter = 0;
 
+  url: string;
+
   eventCallback : (arg0: SseDataEvent) => void
 
   constructor(eventCallback: (arg0: SseDataEvent) => void = () => {}) {
@@ -35,6 +37,7 @@ export class SocketManagerClass {
   }
 
   setupConnection(url: string) {
+    this.url = url;
     console.log("Connecting to ", url)
     this.socket = io(url, { transports: ['websocket'], autoConnect: true});
 
