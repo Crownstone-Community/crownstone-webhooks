@@ -30,29 +30,6 @@ export class ListenerController {
     @repository(EventListenerRepository) protected listenerRepo: EventListenerRepository,
   ) {}
 
-  // check if there is already a listener with this token for this user
-  // @get('/listeners/active')
-  // @authenticate('apiKey')
-  // async doesListenerExist(
-  //   @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
-  //   @param.query.string('token') token: string,
-  //   @param.query.string('userId') crownstoneUserId: string,
-  // ): Promise<boolean> {
-  //   let userId = userProfile[securityId];
-  //   let listenerId = null;
-  //   if (token && crownstoneUserId) {
-  //     listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, userId: crownstoneUserId, token: token}}, {fields: {id:true}})
-  //   }
-  //   else if (token) {
-  //     listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, token: token}}, {fields: {id:true}})
-  //   }
-  //   else if (crownstoneUserId) {
-  //     listenerId = await this.listenerRepo.findOne({where:{ownerId: userId, userId: crownstoneUserId}}, {fields: {id:true}})
-  //   }
-  //
-  //   return listenerId != null;
-  // }
-
 
   // check if there is already a listener with this token for this user
   @get('/listeners/active')
@@ -145,21 +122,8 @@ export class ListenerController {
     }
   }
 
-  //  // delete multiple listeners that use a token.
-  @del('/listeners/token')
-  @authenticate('apiKey')
-  async deleteByToken(
-    @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
-    @param.query.string('token', {required:true}) token: string,
-  ): Promise<Count> {
-    let count = await this.userRepo.eventListeners(userProfile[securityId]).delete({token: token});
-    if (count.count > 0) {
-      WebHookSystem.tokenDeleted(token);
-    }
-    return count;
-  }
 
-   // delete multiple listeners that use a token.
+  // delete multiple listeners that use a token.
   @del('/listeners/userId')
   @authenticate('apiKey')
   async deleteByUserId(
