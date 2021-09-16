@@ -14,7 +14,7 @@ When you have an account, I'll assume you can also get OAUTH2 tokens from the us
 The available events (assuming you have the right OAUTH access scope for them) are:
 
 - [Command events](https://github.com/crownstone/crownstone-lib-nodejs-sse#command-events)
-- [resence events](https://github.com/crownstone/crownstone-lib-nodejs-sse#presence-events)
+- [Presence events](https://github.com/crownstone/crownstone-lib-nodejs-sse#presence-events)
 - [Data change events](https://github.com/crownstone/crownstone-lib-nodejs-sse#data-change-events)
 - [Invitation change events](https://github.com/crownstone/crownstone-lib-nodejs-sse#invitation-change-events)
 
