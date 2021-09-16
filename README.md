@@ -2,6 +2,10 @@
 
 Server to forward events to external urls.
 
+# Documentation
+
+[Documentation can be found here](./docs/README.md)
+
 # Installation
 
 To install the dependencies, run:
