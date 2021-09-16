@@ -332,26 +332,3 @@ test("The token should be updated if a duplicate listener is created, but no dup
 
 
 
-test("Create singular should create/update a single user.", async () => {
-  let listenerRepo = getListenerRepository();
-
-  let {token: apiKey_mike, id: id_mike} = await createUser(client, 'mike');
-
-  socketManagerConfig.connected = true;
-  socketManagerConfig.invalidToken = false;
-  await WebHookSystem.initialize();
-
-  await client.post('/listeners/singular' + api_auth(apiKey_mike)).send(generateListenerDataModel('token1', url1, events1, 'user1')).expect(200);
-  expect(await listenerRepo.find({})).toHaveLength(1);
-  await client.post('/listeners/singular' + api_auth(apiKey_mike)).send(generateListenerDataModel('token1', url1, events1, 'user1')).expect(200);
-  expect(await listenerRepo.find({})).toHaveLength(1);
-  await client.post('/listeners/singular' + api_auth(apiKey_mike)).send(generateListenerDataModel('token1', url2, events1, 'user1')).expect(200);
-  expect(await listenerRepo.find({})).toHaveLength(1);
-  expect((await listenerRepo.find({}))[0].token).toBe("token1")
-  await client.post('/listeners/singular' + api_auth(apiKey_mike)).send(generateListenerDataModel('token2', url2, events1, 'user1')).expect(200);
-  expect(await listenerRepo.find({})).toHaveLength(1);
-  expect((await listenerRepo.find({}))[0].token).toBe("token2")
-
-})
-
-

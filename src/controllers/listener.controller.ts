@@ -121,62 +121,6 @@ export class ListenerController {
   }
 
   // create a new listener
-  @post('/listeners/singular')
-  @authenticate('apiKey')
-  async createSingular(
-    @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
-    @requestBody(ListenerTransferSpec) listener: EventListener,
-  ): Promise<EventListener> {
-    let userId = userProfile[securityId];
-    let existingListeners = await this.userRepo.getListenersByUserId(userId, listener.userId);
-
-    let deleteUsersIds = []
-
-    // if one of the registered listeners has the same eventTypes and url, replace the token.
-    for (let existingListener of existingListeners) {
-      if (listener.url !== existingListener.url) {
-        deleteUsersIds.push(existingListener.id);
-        continue;
-      }
-
-      let match = true;
-      for (let event of listener.eventTypes) {
-        if (existingListener.eventTypes.indexOf(event) === -1) {
-          match = false;
-          break;
-        }
-      }
-
-      // if the events are different
-      if (!match) {
-        deleteUsersIds.push(existingListener.id);
-        continue;
-      }
-
-      if (existingListener.token === listener.token) {
-        // this is exactly the same entry.
-        // ignore the request.
-        return existingListener;
-      }
-
-      deleteUsersIds.push(existingListener.id);
-    }
-
-    if (deleteUsersIds.length > 0) {
-      for (let deleteUserId of deleteUsersIds) {
-        await this.listenerRepo.deleteById(deleteUserId);
-        WebHookSystem.listenerDeleted(deleteUserId);
-      }
-    }
-
-    let newListener = await this.userRepo.createListener(userId, listener);
-    await WebHookSystem.listenerCreated(newListener, true);
-
-    return newListener;
-  }
-
-
-  // create a new listener
   @get('/listeners')
   @authenticate('apiKey')
   async list(
