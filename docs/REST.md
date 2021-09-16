@@ -45,7 +45,7 @@ We will call the provided url with a POST request and the following data payload
 
 This controller is mostly for Crownstone use, it is there for webhook  user management. The only relevant endpoint for someone without admin access is this one:
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/isValidApiKey</summary>
+<summary>GET /users/isValidApiKey</summary>
 
 > If this returns true, your API key is valid.
 >
@@ -63,7 +63,7 @@ This is where you'll be spending most of your time. A listener is a Crownstone C
 which uses your service.
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /listeners</summary>
+<summary>GET /listeners</summary>
 
 > This returns a list of listeners you have registered webhooks for.
 >
@@ -89,7 +89,7 @@ which uses your service.
 
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">POST /listeners</summary>
+<summary>POST /listeners</summary>
 
 > Add a listener for a Crownstone user. The types of events that match the eventTypes (and are allowed within your OAUTH scope) will 
 > be forwarded to your URL.
@@ -125,7 +125,7 @@ which uses your service.
 
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /listeners/active</summary>
+<summary>GET /listeners/active</summary>
 
 > Check if you have already registered a listener for Crownstone user with the userId Crownstone Cloud id.
 > 
@@ -145,7 +145,7 @@ which uses your service.
 </details>
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">DELETE /listeners/{id}</summary>
+<summary>DELETE /listeners/{id}</summary>
 
 > Delete a certain listener by it's listener id.
 > 
@@ -169,7 +169,7 @@ which uses your service.
 
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">DELETE /listeners/userId</summary>
+<summary>DELETE /listeners/userId</summary>
 
 > Delete all listeners that you have registered with a certain Crownstone Cloud id. This is usually done when you 
 > want to remove all existing listeners from a Crownstone user, when they leave your service for instance.
