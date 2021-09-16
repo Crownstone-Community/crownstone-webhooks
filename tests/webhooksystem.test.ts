@@ -15,8 +15,7 @@ import {
   createListener,
   createUser,
   getAbilityChangeEvent,
-  getDataChangeEvent,
-  getSwitchCrownstoneEvent
+  getDataChangeEvent, getMultiSwitchCrownstoneEvent,
 } from "./dataGenerators";
 
 let app    : CrownstoneHooksApplication;
@@ -47,7 +46,7 @@ test("check event delivery with multiple sphere ids", async () => {
   socketManagerConfig.sphereId = sphereId;
   await WebHookSystem.initialize();
 
-  await createListener(client, token, undefined, ["dataChange"]);
+  await createListener(client, token, undefined, undefined, ["dataChange"]);
 
   // we should receive this event
   WebHookSystem.dispatch(getDataChangeEvent(sphereId))
@@ -74,14 +73,14 @@ test("check event delivery with scopes", async () => {
   socketManagerConfig.scopes = ["switch_stone"]
   await WebHookSystem.initialize();
 
-  await createListener(client, token, undefined, ["dataChange","command"]);
+  await createListener(client, token, undefined, undefined,["dataChange","command"]);
 
   // this is our sphere, but our scope should block this event
   WebHookSystem.dispatch(getDataChangeEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(0)
 
   // this is our sphere, but our scope will allow this event
-  WebHookSystem.dispatch(getSwitchCrownstoneEvent(sphereId))
+  WebHookSystem.dispatch(getMultiSwitchCrownstoneEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
@@ -94,14 +93,14 @@ test("check event delivery with scopes", async () => {
   socketManagerConfig.scopes = ["switch_stone"]
   await WebHookSystem.initialize();
 
-  await createListener(client, token, undefined, ["dataChange","command"]);
+  await createListener(client, token, undefined, undefined, ["dataChange","command"]);
 
   // this is our sphere, but our scope should block this event
   WebHookSystem.dispatch(getDataChangeEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(0)
 
   // this is our sphere, but our scope will allow this event
-  WebHookSystem.dispatch(getSwitchCrownstoneEvent(sphereId))
+  WebHookSystem.dispatch(getMultiSwitchCrownstoneEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
@@ -114,14 +113,14 @@ test("check event delivery with scopes and no subscription", async () => {
   socketManagerConfig.scopes = ["stone_information","switch_stone"]
   await WebHookSystem.initialize();
 
-  await createListener(client, token, undefined, ["command"]);
+  await createListener(client, token, undefined, undefined, ["command"]);
 
   // this is our sphere, but our scope should block this event
   WebHookSystem.dispatch(getDataChangeEvent(sphereId, undefined, "stones"))
   expect(fetch).toHaveBeenCalledTimes(0)
 
   // this is our sphere, but our scope will allow this event
-  WebHookSystem.dispatch(getSwitchCrownstoneEvent(sphereId))
+  WebHookSystem.dispatch(getMultiSwitchCrownstoneEvent(sphereId))
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
@@ -133,7 +132,7 @@ test("check invalid events", async () => {
   socketManagerConfig.scopes = ["switch_stone"]
   await WebHookSystem.initialize();
 
-  await createListener(client, token, undefined, ["dataChange","command"]);
+  await createListener(client, token, undefined, undefined, ["dataChange","command"]);
 
   // @ts-ignore
   WebHookSystem.dispatch()

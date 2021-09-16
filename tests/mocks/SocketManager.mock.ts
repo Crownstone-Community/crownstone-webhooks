@@ -15,29 +15,33 @@ export function resetSocketManagerConfig(config: SocketManagerMockConfig, defaul
   config.scopes       = defaultConfig.scopes
 }
 
+
+
 export function mockSocketManager(config: SocketManagerMockConfig) {
-  jest.mock(src+"sockets/socket/SocketManager", () => {
-    return {
-      SocketManager: {
-        isConnected: () => {
-          if (config.connected !== undefined) { return config.connected; }
-          return true;
-        },
-        isValidToken: async (token) => {
-          if (config.isValidToken !== undefined) {
-            return config.isValidToken(token)
-          }
-          else {
-            if (config.invalidToken) {
-              return Promise.resolve(false)
-            }
-            else {
-              return getAccessModel(config)
-            }
-          }
+  class SocketManagerMockClass {
+    isConnected() {
+      if (config.connected !== undefined) { return config.connected; }
+      return true;
+    }
+
+
+    async isValidToken(token) {
+      if (config.isValidToken !== undefined) {
+        return config.isValidToken(token)
+      }
+      else {
+        if (config.invalidToken) {
+          return Promise.resolve(false)
+        }
+        else {
+          return getAccessModel(config)
         }
       }
     }
+  }
+
+  jest.mock(src+"sockets/socket/SocketManagerClass", () => {
+    return { SocketManagerClass: SocketManagerMockClass };
   })
 }
 

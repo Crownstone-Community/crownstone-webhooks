@@ -150,15 +150,17 @@ class WebHookSystemClass {
   }
 
 
+  /**
+   *
+   * @param token
+   */
   tokenDeleted(token: string) {
     if (this.tokenTable[token] === undefined) { return; }
 
     let listenerIds = this.tokenTable[token];
     for (let i = listenerIds.length - 1; i >= 0; i--) {
-      this.listenerDeleted(listenerIds[i], true)
+      this.listenerDeleted(listenerIds[i])
     }
-
-    delete this.tokenTable[token];
   }
 
   async listenerCreated(listener: EventListener, throwErrors = false) : Promise<void> {
@@ -170,11 +172,11 @@ class WebHookSystemClass {
     }
   }
 
-  listenerDeleted(listenerId : string, keepToken: boolean = false) {
+  listenerDeleted(listenerId : string) {
     if (this.listenerTable[listenerId] === undefined) { return; }
 
     let sphereIds = this.listenerTable[listenerId].sphereIds;
-    let token = this.listenerTable[listenerId].token;
+    let token     = this.listenerTable[listenerId].token;
 
     // remove listener from the routing table.
     for (let i = 0; i < sphereIds.length; i++) {
@@ -186,22 +188,22 @@ class WebHookSystemClass {
           this.routingTable[sphereId].splice(j,1);
         }
       }
+
       if (this.routingTable[sphereId].length === 0) {
         delete this.routingTable[sphereId];
       }
     }
 
-    if (keepToken === false) {
-      // remove from the tokentable
-      for (let j = this.tokenTable[token].length - 1; j >= 0; j--) {
-        if (this.tokenTable[token][j] === listenerId) {
-          // remove this element from the sphere.
-          this.tokenTable[token].splice(j, 1);
-        }
+    // remove from the tokentable
+    for (let j = this.tokenTable[token].length - 1; j >= 0; j--) {
+      if (this.tokenTable[token][j] === listenerId) {
+        // remove this element from the sphere.
+        this.tokenTable[token].splice(j, 1);
       }
-      if (this.tokenTable[token].length === 0) {
-        delete this.tokenTable[token];
-      }
+    }
+
+    if (this.tokenTable[token].length === 0) {
+      delete this.tokenTable[token];
     }
 
     delete this.listenerTable[listenerId];
@@ -218,7 +220,7 @@ class WebHookSystemClass {
         this._generateUserMapItem(user);
       }
       else {
-        this.userTable[user.id].secret = user.secret;
+        this.userTable[user.id].secret  = user.secret;
         this.userTable[user.id].enabled = user.enabled;
       }
     }

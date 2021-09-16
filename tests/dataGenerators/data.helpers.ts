@@ -38,9 +38,9 @@ function mockToken() {
   return Math.floor(Math.random()*1e8).toString(16)
 }
 
-export async function createListener(client : Client, key: string, token: string = mockToken(), events = undefined, status = 200) : Promise<{id: string, token: string}> {
+export async function createListener(client : Client, apiKey: string, token: string = mockToken(), url : string = undefined, events : string[] = undefined, status = 200) : Promise<{id: string, token: string}> {
   let id = '';
-  await client.post('/listeners' + api_auth(key)).send(generateListenerDataModel(token, undefined, events)).expect(status).expect(({body}) => { id = body.id });
+  await client.post('/listeners' + api_auth(apiKey)).send(generateListenerDataModel(token, url, events)).expect(status).expect(({body}) => { id = body.id });
   return {id, token};
 }
 

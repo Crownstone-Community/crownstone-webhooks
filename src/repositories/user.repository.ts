@@ -40,6 +40,10 @@ export class UserRepository extends DefaultCrudRepository<User,typeof User.proto
     return this.eventListeners(userId).create(entity)
   }
 
+  async getListenersByUserId(userId: string, listenerUserId: string) : Promise<EventListener[]> {
+    return this.eventListeners(userId).find({where: {userId: listenerUserId}})
+  }
+
   async getLatestCount(userId: string) : Promise<number> {
     return await this.usageHistoryRepository.getCount(userId);
   }

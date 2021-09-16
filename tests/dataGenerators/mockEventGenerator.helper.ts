@@ -16,15 +16,6 @@ export function getSystemEvent(subtype = systemSubTypes[0], code = 10, message =
   }
 }
 
-export function getSwitchCrownstoneEvent(sphereId) : SwitchCrownstoneEvent {
-  return {
-    type:        "command",
-    subType:     "switchCrownstone",
-    sphere:      getSphereData(sphereId),
-    crownstone:  getCrownstoneData(),
-  }
-}
-
 export function getMultiSwitchCrownstoneEvent(sphereId) : MultiSwitchCrownstoneEvent {
   return { // not used yet
     type:        "command",
@@ -156,7 +147,6 @@ export function getAllDataEvents(sphereId : string, userId : string) {
 
   return [
     getSwitchStateUpdateEvent(sphereId),
-    getSwitchCrownstoneEvent(sphereId),
     getMultiSwitchCrownstoneEvent(sphereId),
     getSphereTokensUpdatedEvent(sphereId),
     ...presenceSubTypes.map(        (s) => getPresenceSphereEvent(sphereId, userId, s)),
