@@ -87,7 +87,7 @@ export class SocketManagerClass {
     }
   }
 
-  _isValidToken(token: string, requestType: string) : Promise<AccessModel | false> {
+  _isValidToken(token: string, requestType: string) : Promise<AccessModel> {
     return new Promise((resolve, reject) => {
 
       // in case we can not get the token resolved in time, timeout.
@@ -120,7 +120,7 @@ export class SocketManagerClass {
     })
   }
 
-  isValidToken(token: string) : Promise<AccessModel | false> {
+  isValidToken(token: string) : Promise<AccessModel> {
     if (token.length > 32) {
       return this.isValidAccessToken(token);
     }
@@ -129,11 +129,11 @@ export class SocketManagerClass {
     }
   }
 
-  isValidAccessToken(token: string) : Promise<AccessModel | false>{
+  isValidAccessToken(token: string) : Promise<AccessModel>{
     return this._isValidToken(token, protocolTopics.requestForAccessTokenCheck);
   }
 
-  isValidOauthToken(token: string) : Promise<AccessModel | false>{
+  isValidOauthToken(token: string) : Promise<AccessModel>{
     return this._isValidToken(token, protocolTopics.requestForOauthTokenCheck);
   }
 }

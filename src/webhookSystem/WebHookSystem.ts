@@ -95,10 +95,12 @@ class WebHookSystemClass {
   }
 
   async _generateRoutingMapForListener(listener: EventListener, throwErrors = false) : Promise<void> {
-    let accessModel = await SocketManager.isValidToken(listener.token);
+    let accessModel;
 
-    // invalid token, remove listener
-    if (accessModel === false) {
+    try {
+      accessModel = await SocketManager.isValidToken(listener.token);
+    }
+    catch (err) {
       await DbRef.listeners.deleteById(listener.id);
       if (throwErrors) { throw new HttpErrors.BadRequest("Invalid token."); }
       return;
