@@ -244,7 +244,8 @@ class WebHookSystemClass {
 
 
   async dispatch(event: SseDataEvent) {
-    LOGevents.debug("Receiving event", event)
+    let eventId = Util.getShortUUID();
+    LOGevents.debug(eventId,"Receiving event", event)
     // check for sphereId
     if (!event) { return };
 
@@ -258,39 +259,56 @@ class WebHookSystemClass {
     let expiredTokens = [];
 
     // loop over items
-    LOGevents.info("Starting routing check...")
+    LOGevents.info(eventId,"Starting routing check...")
     for (let i = 0; i < this.routingTable[sphereId].length; i++) {
       let routingItem = this.routingTable[sphereId][i];
 
       let hookUserId = routingItem.ownerId;
 
       // check owner enabled
-      if (this.userTable[hookUserId] === undefined)      { continue; }
-      LOGevents.info("Passed user exists check...")
-      if (this.userTable[hookUserId].enabled === false ) { continue; }
-      LOGevents.info("Passed user enabled check...")
-      if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) { continue; }
-      LOGevents.info("Passed user daily allowance check...")
+      if (this.userTable[hookUserId] === undefined) {
+        LOGevents.info(eventId, "Failed user exists check...")
+        continue;
+      }
+      LOGevents.info(eventId, "Passed user exists check...")
+      if (this.userTable[hookUserId].enabled === false ) {
+        LOGevents.info(eventId, "Failed user enabled check...")
+        continue;
+      }
+      LOGevents.info(eventId, "Passed user enabled check...")
+      if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) {
+        LOGevents.info(eventId, "Failed user daily allowance check...")
+        continue;
+      }
+      LOGevents.info(eventId, "Passed user daily allowance check...")
 
       // check token expired
       if (routingItem.tokenExpirationTime <= now) {
         if (expiredTokens.indexOf(routingItem.token) === -1) {
           expiredTokens.push(routingItem.token);
         }
+        LOGevents.info(eventId, "Failed token expiration check...");
         continue;
       }
-      LOGevents.info("Passed token expiration check...");
+      LOGevents.info(eventId, "Passed token expiration check...");
 
       // check for event type
-      if (routingItem.events[eventType] !== true) { continue; }
-      LOGevents.info("Passed event type check...");
+      if (routingItem.events[eventType] !== true) {
+        LOGevents.info(eventId, "Failed event type check...");
+        continue;
+      }
+      LOGevents.info(eventId, "Passed event type check...");
 
       // check authentication
-      if (checkScopePermissions(routingItem.scopeAccess, event) === false) { continue; }
-      LOGevents.info("Passed scope check...");
+      if (checkScopePermissions(routingItem.scopeAccess, event) === false) {
+        LOGevents.info(eventId, "Failed scope check...");
+        continue;
+      }
+      LOGevents.info(eventId, "Passed scope check...");
 
       // post
-      postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url)
+      LOGevents.info(eventId, "Posting...");
+      postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url, eventId)
 
       // increment usage counter;
       this.userTable[hookUserId].usageCounter++;
@@ -335,7 +353,7 @@ function getMap(stringArray: string[]) : eventMap {
 }
 
 
-async function postToUrl(clientId: string, clientSecret: string, userId: string, data : SseDataEvent, url: string) {
+async function postToUrl(clientId: string, clientSecret: string, userId: string, data : SseDataEvent, url: string, eventId: string) {
   let wrappedData = {
     clientId: clientId,
     clientSecret: clientSecret,
@@ -344,11 +362,11 @@ async function postToUrl(clientId: string, clientSecret: string, userId: string,
   }
   let token = Math.floor(Math.random()*1e8).toString(36)
   try {
-    LOG.debug("Posting to ", url, data, token);
+    LOG.debug(eventId, "Posting to ", url, data, token);
     let result = await fetch(url, { method: "POST", headers: defaultHeaders, body: JSON.stringify(wrappedData) })
-    LOG.debug("Post complete.", token);
+    LOG.debug(eventId, "Post complete.", token);
   }
-  catch(e) { LOG.info("Post failed.",e, token) }
+  catch(e) { LOG.info(eventId, "Post failed.",e, token) }
 }
 
 export const WebHookSystem = new WebHookSystemClass();

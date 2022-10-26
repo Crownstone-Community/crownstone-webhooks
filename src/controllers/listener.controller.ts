@@ -52,6 +52,7 @@ export class ListenerController {
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
     @requestBody(ListenerTransferSpec) listener: EventListener,
   ): Promise<EventListener> {
+    console.log("INVOKING CREATE LISTENERS", listener);
     let userId = userProfile[securityId];
 
     let existingListeners = await this.userRepo.getListenersByUserId(userId, listener.userId);
@@ -103,6 +104,7 @@ export class ListenerController {
   async list(
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
   ): Promise<EventListener[]> {
+
     return this.userRepo.eventListeners(userProfile[securityId]).find();
   }
 
@@ -113,6 +115,7 @@ export class ListenerController {
     @inject(SecurityBindings.USER) userProfile : UserProfileDescription,
     @param.path.string('id') id: string,
   ): Promise<void> {
+    console.log("INVOKING DELETE", id);
     try {
       await this.userRepo.eventListeners(userProfile[securityId]).delete({id: id})
       WebHookSystem.listenerDeleted(id);
