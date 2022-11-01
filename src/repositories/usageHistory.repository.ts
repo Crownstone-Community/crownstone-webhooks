@@ -15,15 +15,17 @@ export class UsageHistoryRepository extends DefaultCrudRepository<UsageHistory,t
     super(UsageHistory, datasource);
   }
 
-  async setCount(ownerId: string, count: number) {
+  async setCount(ownerId: string, count: number) : Promise<number> {
     let currentDate = new Date(new Date().setHours(0,0,0,0))
     let result = await this.findOne({where:{ date:currentDate, ownerId: ownerId }});
     if (result === null) {
-      await this.create({date:currentDate, counter:count, ownerId: ownerId});
+      await this.create({date:currentDate, counter: 0, ownerId: ownerId});
+      return 0;
     }
     else {
       result.counter += count;
       await this.update(result);
+      return count;
     }
   }
 

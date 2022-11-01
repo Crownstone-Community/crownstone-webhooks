@@ -259,7 +259,7 @@ class WebHookSystemClass {
     let expiredTokens = [];
 
     // loop over items
-    LOGevents.info(eventId,"Starting routing check...")
+    LOGevents.debug(eventId,"Starting routing check...")
     for (let i = 0; i < this.routingTable[sphereId].length; i++) {
       let routingItem = this.routingTable[sphereId][i];
 
@@ -267,47 +267,47 @@ class WebHookSystemClass {
 
       // check owner enabled
       if (this.userTable[hookUserId] === undefined) {
-        LOGevents.info(eventId, "Failed user exists check...")
+        LOGevents.debug(eventId, "Failed user exists check...")
         continue;
       }
-      LOGevents.info(eventId, "Passed user exists check...")
+      LOGevents.debug(eventId, "Passed user exists check...")
       if (this.userTable[hookUserId].enabled === false ) {
-        LOGevents.info(eventId, "Failed user enabled check...")
+        LOGevents.debug(eventId, "Failed user enabled check...")
         continue;
       }
-      LOGevents.info(eventId, "Passed user enabled check...")
+      LOGevents.debug(eventId, "Passed user enabled check...")
       if (this.userTable[hookUserId].usageCounter >= Number(process.env.DAILY_ALLOWANCE)) {
-        LOGevents.info(eventId, "Failed user daily allowance check...")
+        LOGevents.debug(eventId, "Failed user daily allowance check...")
         continue;
       }
-      LOGevents.info(eventId, "Passed user daily allowance check...")
+      LOGevents.debug(eventId, "Passed user daily allowance check...")
 
       // check token expired
       if (routingItem.tokenExpirationTime <= now) {
         if (expiredTokens.indexOf(routingItem.token) === -1) {
           expiredTokens.push(routingItem.token);
         }
-        LOGevents.info(eventId, "Failed token expiration check...");
+        LOGevents.debug(eventId, "Failed token expiration check...");
         continue;
       }
-      LOGevents.info(eventId, "Passed token expiration check...");
+      LOGevents.debug(eventId, "Passed token expiration check...");
 
       // check for event type
       if (routingItem.events[eventType] !== true) {
-        LOGevents.info(eventId, "Failed event type check...");
+        LOGevents.debug(eventId, "Failed event type check...");
         continue;
       }
-      LOGevents.info(eventId, "Passed event type check...");
+      LOGevents.debug(eventId, "Passed event type check...");
 
       // check authentication
       if (checkScopePermissions(routingItem.scopeAccess, event) === false) {
-        LOGevents.info(eventId, "Failed scope check...");
+        LOGevents.debug(eventId, "Failed scope check...");
         continue;
       }
-      LOGevents.info(eventId, "Passed scope check...");
+      LOGevents.debug(eventId, "Passed scope check...");
 
       // post
-      LOGevents.info(eventId, "Posting...");
+      LOGevents.debug(eventId, "Posting...");
       postToUrl(hookUserId, this.userTable[hookUserId].secret, routingItem.tokenUserId, event, routingItem.url, eventId)
 
       // increment usage counter;
@@ -328,7 +328,8 @@ class WebHookSystemClass {
     for (let i = 0; i < userIds.length; i++) {
       let userId = userIds[i];
       if (this.userTable[userIds[i]].counterUpdated === true) {
-        await DbRef.usage.setCount(userId, this.userTable[userId].usageCounter);
+        let newCount = await DbRef.usage.setCount(userId, this.userTable[userId].usageCounter);
+        this.userTable[userId].usageCounter = newCount;
         this.userTable[userId].counterUpdated = false;
       }
     }
